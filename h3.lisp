@@ -52,9 +52,26 @@ new slot is created).  EQUALP is the test used for duplicates."
 (defun tournament-select-one (population fitnesses)
   "Does one tournament selection and returns the selected individual."
 
-  ;;; IMPLEMENT ME  
+  ;pick tournament-size individuals from population
+  (let
+    ((sampled-indices (loop repeat *tournament-size* collect (random (length population))))) ;these the individuals
+
+    (elt population
+      (nth (apply #'max (map 'list #'(lambda (index) (nth fitnesses index)) sampled-indices)) sampled-indices) ;returns max fitness i
+    )
+  )
+  ;NOTE gonna need a let ^
+
+  ;return individual with max fitness
+
+  ;really it's like draw random index w/ replacement N times
+    ;get individual at index, fitness at index
+  ;return individual with highest fitness
   )
 
+;HOW TO TEST
+;1. make 2 lists of 3.
+;2. (tournament-select-one popl vals) ;run with sample values
 
 
 (defun tournament-selector (num population fitnesses)
@@ -139,6 +156,12 @@ POP-SIZE, using various functions"
 ;;; :leading-ones
 ;;; :leading-ones-blocks
 
+(defun list-lengths-equal (lst1 lst2)
+  (declare (type list lst1 lst2))
+  (if (not (= (length lst1) (length lst2)))
+      (error "Lists ~S and ~S don't have equal length!" lst1 lst2)
+      t)
+)
 
 
 (defparameter *boolean-vector-length* 100)
@@ -148,8 +171,7 @@ POP-SIZE, using various functions"
 (defun boolean-vector-creator ()
   "Creates a boolean-vector *boolean-vector-length* in size, filled with
 random Ts and NILs, or with random 1s and 0s, your option."
-    ;;; IMPLEMENT ME
-
+    (generate-list *boolean-vector-length* (lambda () (eql (random 2) 1)))
   )
 
 
@@ -161,14 +183,47 @@ then mutates the children.  *crossover-probability* is the probability that any
 given allele will crossover.  *mutation-probability* is the probability that any
 given allele in a child will mutate.  Mutation simply flips the bit of the allele."
 
-    ;;; IMPLEMENT ME
+    (list-lengths-equal ind1 ind2) ;assert lengths are equal between individuals
+    ;copy ind1, ind2
+
+    (let ((c1 (copy-list ind1)) ;make copies of ind1 and ind2
+        (c2 (copy-list ind2)))
+
+      ;iterate through child arrays pairwise, swap bits on P(crossover)
+      (loop for i from 0 below (length c1) do
+        (if (random? *boolean-crossover-probability*)
+          (swap (elt c1 i) (elt c2 i))
+        )
+      )
+
+      ;iterate through child arrays individually, flip bits on P(mutation)
+      (loop for i from 0 below (length c1) do
+        (if (random? *boolean-mutation-probability*)
+          (if 
+            (= (elt c1 i) T) (setf (elt c1 i) nil) ;if T, set nil
+            (setf (elt c1 i) T) ;else, set T
+          )
+        )
+      )
+
+      (values c1 c2)
+    )
 )
+
+;HOW TO TEST:
+;1. make, print i1, i2
+;2. run bvm
+;3. print i1,i2; c1,c2
+;(defparameter *boolean-vector-length* 5)
+;(setf i1 (boolean-vector-creator))
+;(setf i2 (boolean-vector-creator))
+;(boolean-vector-modifier i1 i2)
 
 (defun boolean-vector-evaluator (ind1)
   "Evaluates an individual, which must be a boolean-vector, and returns
 its fitness."
 
-    ;;; IMPLEMENT ME
+    (count-if #'identity ind1) ;the :max-ones problem!
 )
 
 
@@ -187,7 +242,7 @@ its fitness."
 	:creator #'boolean-vector-creator
 	:selector #'tournament-selector
 	:modifier #'boolean-vector-modifier
-        :evaluator #'boolean-vector-evaluator
+  :evaluator #'boolean-vector-evaluator
 	:printer #'simple-printer)
 |#
 
