@@ -1,0 +1,51 @@
+#|
+In this project you will produce three things:
+
+1. A high-level evolutionary computation framework
+
+2. The representation, breeding functions, and evaluations to do a simple
+GA for boolean vectors and for floating-point vectors, including a few test
+functions on each.
+
+3. The representation, breeding functions, and evaluations to do GP for
+two problems:
+A. Symbolic Regression
+B. Artificial Ant
+
+The high-level EC system will work as follows:
+
+- Simple generational evolution
+- GA-style Tournament selection
+- A simple breeding function
+- some simple statistics functions
+
+I have provided the approximate function templates I myself used to complete
+the task; with permission you can use these or go your own way, but otherwise
+please try not to deviate much from this template.
+
+The project is due approximately two and a half weeks from now or so.  Please 
+try to get it in on time.
+
+WHAT YOU MUST PROVIDE:
+
+1. Completed code which works and compiles.  As simple as possible would be nice.
+
+2. A short report describing the code you wrote and some experimentation with it.
+Some things to try:
+   -- different problems (in the vector section)
+   -- different settings of mutation and crossover parameters
+   -- different population sizes or run lengths
+Try to get a handle on how problem difficulty changes when you tweak various
+parameters.  Can you get mutation and crossover parameters which seem optimal for
+a given problem for example?  (Obviously bigger population sizes are more optimal
+but that's kinda cheating).  Note that this is a STOCHASTIC problem so you'll need
+to run a number of times and get the mean best result in order to say anything of
+consequence.  It'd be nice if the report were in LaTeX and it'd be good practice for
+you as well, but it's not necessary.  I do not accept reports in Word.  Only send
+me a PDF.
+
+Make sure your code is compiled.  In most cases (such as SBCL), your code will be
+automatically compiled.  But there exist systems (like LispWorks ("lisp" on 
+mason.gmu.edu)) where the default is to interpret the code, and so you must 
+compile your file first and then load that.
+|#
