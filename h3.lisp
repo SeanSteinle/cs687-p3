@@ -69,20 +69,13 @@ new slot is created).  EQUALP is the test used for duplicates."
     champion)
   )
 
-;HOW TO TEST
-;1. make 2 lists of 3.
-;2. (tournament-select-one popl vals) ;run with sample values
-(setf myvals (generate-list 5 (lambda () (random 10))))
-(setf mypop (list 1 2 3 4 5))
-(tournament-select-one mypop myvals) ;should give best values in myvals a LOT but not exclusively
-
 (defun tournament-selector (num population fitnesses)
   "Does NUM tournament selections, and puts them all in a list"
   (loop repeat num-selections
         collecting (tournament-select-one population fitnesses))
 )
 
-(defun simple-printer (pop fitnesses)  ;; I'm nice and am providing this for you.  :-)
+(defun simple-printer (pop fitnesses)  ;; I'm nice and am providing this for you.  :-
   "Determines the individual in pop with the best (highest) fitness, then
 prints that fitness and individual in a pleasing manner."
   (let (best-ind best-fit)
@@ -93,10 +86,10 @@ prints that fitness and individual in a pleasing manner."
 		  (setq best-fit fit))) pop fitnesses)
     (format t "~%Best Individual of Generation...~%Fitness: ~a~%Individual:~a~%"
 	    best-fit best-ind)
-    fitnesses))
+    fitnesses)
+)
 
-(defun evolve (generations pop-size
-	       &key setup creator selector modifier evaluator printer)
+(defun evolve (generations pop-size &key setup creator selector modifier evaluator printer)
   "Evolves for some number of GENERATIONS, creating a population of size
 POP-SIZE, using various functions"
   ;; The functions passed in are as follows:
@@ -122,9 +115,31 @@ POP-SIZE, using various functions"
   ;; best individual discovered over the whole run at the end, plus its fitness
   ;; and any other statistics you think might be nifty.
 
-    ;;; IMPLEMENT ME
+  ;call setup for any necessary global variable setting
+  (format t "running for ps=~a and g=~a~%" pop-size generations)
+  (format t "have functions called: ~a" setup)
+  (setup)
 
+  ;create initial population of size pop-size (create)
+  (let* ((population (loop repeat pop-size collecting (creator))) (fitnesses (map #'evaluator population)))
+    (format t "initial population: ~a~%initial fitnesses: ~a~%" population fitnesses)
+
+    ;for `generations` generations
+    (dotimes (i generations)
+      (print "hi")
+      ;select parents to breed for new population (selection)
+
+      ;create children for new population (mutate)
+
+      ;push children into new population
+
+      ;get fitnesses for population (evaluate)
+
+      ;print best fitness of this generation
+    
+    )
   )
+)
 
 
 
@@ -164,14 +179,13 @@ POP-SIZE, using various functions"
       t)
 )
 
-
 (defparameter *boolean-vector-length* 100)
 (defparameter *boolean-problem* :max-ones)
 ;; perhaps other problems might include... 
 
 (defun boolean-vector-creator ()
   "Creates a boolean-vector *boolean-vector-length* in size, filled with
-random Ts and NILs, or with random 1s and 0s, your option."
+random 1s and 0s."
     (generate-list *boolean-vector-length* (lambda () (random 2)))
   )
 
@@ -211,15 +225,6 @@ given allele in a child will mutate.  Mutation simply flips the bit of the allel
     )
 )
 
-;HOW TO TEST:
-;1. make, print i1, i2
-;2. run bvm
-;3. print i1,i2; c1,c2
-(defparameter *boolean-vector-length* 5)
-(setf i1 (boolean-vector-creator))
-(setf i2 (boolean-vector-creator))
-(boolean-vector-modifier i1 i2)
-
 (defun boolean-vector-evaluator (ind1)
   "Evaluates an individual, which must be a boolean-vector, and returns
 its fitness."
@@ -230,6 +235,7 @@ its fitness."
 (defun boolean-vector-sum-setup ()
   "Does nothing.  Perhaps you might use this to set up various
 (ahem) global variables to define the problem being evaluated, I dunno."
+  ;NOTHING SO FAR, feels like we might want to set the problem here, but why here?
   )
 
 

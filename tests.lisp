@@ -44,7 +44,17 @@
     )
 )
 
+;UNIT TESTS FOR BV
 (test-boolean-vector-creator)
 (test-boolean-vector-modifier)
 (test-boolean-vector-evaluator)
 (test-boolean-vector-selection) ;tournament selection
+
+;END-TO-END TEST FOR BV
+(evolve 50 100
+ 	:setup #'boolean-vector-sum-setup
+	:creator #'boolean-vector-creator
+	:selector #'tournament-selector
+	:modifier #'boolean-vector-modifier
+    :evaluator #'boolean-vector-evaluator
+	:printer #'simple-printer)
