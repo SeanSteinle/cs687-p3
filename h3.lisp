@@ -119,7 +119,9 @@ POP-SIZE, using various functions"
   (boolean-vector-sum-setup); TODO REPLACE WITH (setup)
 
   ;create initial population of size pop-size (create)
-  (let* ((population (loop repeat pop-size collecting (boolean-vector-creator)))) ;#TODO REPLACE WITH GENERIC FUNCTIONS
+  (let* (
+    (population (loop repeat pop-size collecting (boolean-vector-creator)))
+  ) ;#TODO REPLACE WITH GENERIC FUNCTIONS
     (format t "initial population: ~a~%initial fitnesses:~%" population)
 
     ;for `generations` generations
@@ -883,3 +885,13 @@ more pellets, higher (better) fitness."
         :evaluator #'gp-artificial-ant-evaluator
 	:printer #'simple-printer)
 |#
+
+
+  ;create initial population of size pop-size (create)
+(let* (
+    (population (loop repeat 5 collecting (boolean-vector-creator)))
+    (fitnesses (mapcar #'boolean-vector-evaluator population))
+  )
+    (format t "initial population: ~a~%initial fitnesses: ~a~%" population fitnesses)
+)
+;getting all 100's??? that's weird...
