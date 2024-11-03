@@ -116,17 +116,16 @@ POP-SIZE, using various functions"
   ;; and any other statistics you think might be nifty.
 
   ;call setup for any necessary global variable setting
-  (format t "running for ps=~a and g=~a~%" pop-size generations)
-  (format t "have functions called: ~a" setup)
-  (setup)
+  (boolean-vector-sum-setup); TODO REPLACE WITH (setup)
 
   ;create initial population of size pop-size (create)
-  (let* ((population (loop repeat pop-size collecting (creator))) (fitnesses (map #'evaluator population)))
-    (format t "initial population: ~a~%initial fitnesses: ~a~%" population fitnesses)
+  (let* ((population (loop repeat pop-size collecting (boolean-vector-creator)))) ;#TODO REPLACE WITH GENERIC FUNCTIONS
+    (format t "initial population: ~a~%initial fitnesses:~%" population)
 
     ;for `generations` generations
     (dotimes (i generations)
-      (print "hi")
+      (setf x 1) ;PLACEHOLDER
+
       ;select parents to breed for new population (selection)
 
       ;create children for new population (mutate)
