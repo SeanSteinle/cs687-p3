@@ -52,34 +52,35 @@ new slot is created).  EQUALP is the test used for duplicates."
 (defun tournament-select-one (population fitnesses)
   "Does one tournament selection and returns the selected individual."
 
-  ;pick tournament-size individuals from population
-  (let
-    ((sampled-indices (loop repeat *tournament-size* collect (random (length population))))) ;these the individuals
+  ;; Variables to store the champion's details
+  (let ((champion nil)
+        (max-fitness most-negative-fixnum))
 
-    (elt population
-      (nth (apply #'max (map 'list #'(lambda (index) (nth fitnesses index)) sampled-indices)) sampled-indices) ;returns max fitness i
-    )
-  )
-  ;NOTE gonna need a let ^
+    ;; Loop over *tournament-size* times selecting random candidates and updating the champion if necessary
+    (loop repeat *tournament-size* do
+          (let* ((index     (random (length population)))
+                 (candidate (nth index population))
+                 (fitness   (nth index fitnesses)))
+            (when (> fitness max-fitness)
+              (setq champion candidate)
+              (setq max-fitness fitness))))
 
-  ;return individual with max fitness
-
-  ;really it's like draw random index w/ replacement N times
-    ;get individual at index, fitness at index
-  ;return individual with highest fitness
+    ;; Return the champion after *tournament-size* comparisons
+    champion)
   )
 
 ;HOW TO TEST
 ;1. make 2 lists of 3.
 ;2. (tournament-select-one popl vals) ;run with sample values
-
+(setf myvals (generate-list 5 (lambda () (random 10))))
+(setf mypop (list 1 2 3 4 5))
+(tournament-select-one mypop myvals) ;should give best values in myvals a LOT but not exclusively
 
 (defun tournament-selector (num population fitnesses)
   "Does NUM tournament selections, and puts them all in a list"
-
-    ;;; IMPLEMENT ME
-  )
-
+  (loop repeat num-selections
+        collecting (tournament-select-one population fitnesses))
+)
 
 (defun simple-printer (pop fitnesses)  ;; I'm nice and am providing this for you.  :-)
   "Determines the individual in pop with the best (highest) fitness, then
@@ -171,7 +172,7 @@ POP-SIZE, using various functions"
 (defun boolean-vector-creator ()
   "Creates a boolean-vector *boolean-vector-length* in size, filled with
 random Ts and NILs, or with random 1s and 0s, your option."
-    (generate-list *boolean-vector-length* (lambda () (eql (random 2) 1)))
+    (generate-list *boolean-vector-length* (lambda () (random 2)))
   )
 
 
@@ -200,8 +201,8 @@ given allele in a child will mutate.  Mutation simply flips the bit of the allel
       (loop for i from 0 below (length c1) do
         (if (random? *boolean-mutation-probability*)
           (if 
-            (= (elt c1 i) T) (setf (elt c1 i) nil) ;if T, set nil
-            (setf (elt c1 i) T) ;else, set T
+            (= (elt c1 i) 0) (setf (elt c1 i) 1) ;if 0, set 1
+            (setf (elt c1 i) 0) ;else, set 0
           )
         )
       )
@@ -214,10 +215,10 @@ given allele in a child will mutate.  Mutation simply flips the bit of the allel
 ;1. make, print i1, i2
 ;2. run bvm
 ;3. print i1,i2; c1,c2
-;(defparameter *boolean-vector-length* 5)
-;(setf i1 (boolean-vector-creator))
-;(setf i2 (boolean-vector-creator))
-;(boolean-vector-modifier i1 i2)
+(defparameter *boolean-vector-length* 5)
+(setf i1 (boolean-vector-creator))
+(setf i2 (boolean-vector-creator))
+(boolean-vector-modifier i1 i2)
 
 (defun boolean-vector-evaluator (ind1)
   "Evaluates an individual, which must be a boolean-vector, and returns
@@ -225,8 +226,6 @@ its fitness."
 
     (count-if #'identity ind1) ;the :max-ones problem!
 )
-
-
 
 (defun boolean-vector-sum-setup ()
   "Does nothing.  Perhaps you might use this to set up various
