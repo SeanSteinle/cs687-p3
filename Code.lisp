@@ -269,7 +269,7 @@ random Ts and NILs, or with random 1s and 0s, your option."
 
 
 (defparameter *boolean-crossover-probability* 0.2)
-(defparameter *boolean-mutation-probability* 0.05)
+(defparameter *boolean-mutation-probability* 0.01)
 (defun boolean-vector-modifier (ind1 ind2)
   "Copies and modifies ind1 and ind2 by crossing them over with a uniform crossover,
 then mutates the children.  *crossover-probability* is the probability that any
