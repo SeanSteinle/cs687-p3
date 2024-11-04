@@ -190,7 +190,7 @@ POP-SIZE, using various functions"
   ;; and any other statistics you think might be nifty.
   (funcall setup)
   (let*
-      (population fitnesses (best 0) current)
+      (population fitnesses (best -9999999999) current)
     (dotimes (j pop-size)
       (setf population (append population (list (funcall creator))))
       )
@@ -342,7 +342,7 @@ its fitness."
 	:printer #'simple-printer)
 |#
 
-(evolve 50 100 :setup #'boolean-vector-sum-setup :creator #'boolean-vector-creator :selector #'tournament-selector :modifier #'boolean-vector-modifier :evaluator #'boolean-vector-evaluator :printer #'simple-printer)
+;;;(evolve 50 100 :setup #'boolean-vector-sum-setup :creator #'boolean-vector-creator :selector #'tournament-selector :modifier #'boolean-vector-modifier :evaluator #'boolean-vector-evaluator :printer #'simple-printer)
 
 
 
@@ -392,40 +392,88 @@ its fitness."
 (defun float-vector-creator ()
   "Creates a floating-point-vector *float-vector-length* in size, filled with
 random numbers in the range appropriate to the given problem"
-  
+  (let* ((result))
+    (dotimes (i *float-vector-length*)
+      (setf result (append result (list (+ (random (- *float-max* *float-min*)) *float-min*))))
+      )
+    result
+    )
 ;;; IMPLEMENT ME
 ;;; you might as well use random uniform numbers from *float-vector-min*
 ;;; to *float-vector-max*.  
-
   )
 
+;;;(print (float-vector-creator))
 
 
 (defparameter *float-crossover-probability* 0.2)
 (defparameter *float-mutation-probability* 0.1) ;; I just made up this number
 (defparameter *float-mutation-variance* 0.01) ;; I just made up this number
 (defun float-vector-modifier (ind1 ind2)
-  (declare (ignore ind1))
-  (declare (ignore ind2))
   "Copies and modifies ind1 and ind2 by crossing them over with a uniform crossover,
 then mutates the children.  *crossover-probability* is the probability that any
 given allele will crossover.  *mutation-probability* is the probability that any
 given allele in a child will mutate.  Mutation does gaussian convolution on the allele."
-
+  (let* (
+         (copy1 (copy-list ind1))
+         (copy2 (copy-list ind2))
+         )
+    (dotimes (i (length copy1))
+      (if (random? *float-crossover-probability*)
+          (swap (elt copy1 i) (elt copy2 i))
+          )
+      (if (random? *float-mutation-probability*)
+          (loop
+            (let ((num (box-muller)))
+              (if (and (< (+ (elt copy1 i) num) *float-max*) (> (+ (elt copy1 i) num) *float-min*))
+                  (progn
+                    (setf (elt copy1 i) (+ num (elt copy1 i)))
+                    (return)
+                    ))
+              )
+            )
+          )
+      (if (random? *float-mutation-probability*)
+          (loop
+            (let ((num (box-muller)))
+              (if (and (< (+ (elt copy2 1) num) *float-max*) (> (+ (elt copy2 i) num) *float-min*))
+                  (progn
+                    (setf (elt copy2 i) (+ num (elt copy2 i)))
+                    (return)
+                    )
+                  )
+              )
+            )
+          )
+      )
+    (list copy1 copy2)
+    )
 ;;; IMPLEMENT ME
 ;;; Note: crossover is probably identical to the bit-vector crossover
 ;;; See "Gaussian Convolution" (Algorithm 11) in the book for mutation
-
   )
 
+;;;1 variable random gaussian using 2 uniform
+(defun box-muller ()
+  (* (sqrt (* -2 (log (random 1.0)))) (cos (* 2 pi (random 1.0))))
+  )
+
+
+
 (defun float-vector-sum-evaluator (ind1)
-  (declare (ignore ind1))
   "Evaluates an individual, which must be a floating point vector, and returns
 its fitness."
-
+  (let* ((result 0))
+    (setf result (+ result (* 10 (length ind1))))
+    (dolist (i ind1)
+      (setf result (+ result (- (* i i) (* 10 (cos (* 2 pi i))))))
+      )
+    (* -1 result) ;;;negative because we want higher fitnesses to be better
+    )
 ;;; IMPLEMENT ME
   )
 
+;;;(print (float-vector-sum-evaluator '(1.28829 2.18818)))
 
 
 
@@ -449,7 +497,7 @@ and the floating-point ranges involved, etc.  I dunno."
 	:printer #'simple-printer)
 |#
 
-
+(evolve 50 100 :setup #'float-vector-sum-setup :creator #'float-vector-creator :selector #'tournament-selector :modifier #'float-vector-modifier :evaluator #'float-vector-sum-evaluator :printer #'simple-printer)
 
 
 
