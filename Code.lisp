@@ -193,9 +193,9 @@ POP-SIZE, using various functions"
       (population fitnesses (best 0) current)
     (dotimes (j pop-size)
       (setf population (append population (list (funcall creator))))
-      (setf fitnesses (append fitnesses (list (funcall evaluator (elt population j)))))
       )
     (dotimes (i generations)
+      (print i)
       (setf fitnesses '())
       (dotimes (j pop-size)
         (setf current (funcall evaluator (elt population j)))
@@ -206,14 +206,9 @@ POP-SIZE, using various functions"
       (setf population (funcall selector pop-size population fitnesses))
       (let* ((new-pop))
         (dotimes (k (/ pop-size 2))
-          (setf new-pop (append new-pop (funcall modifier (random-elt population) (random-elt population))))           )
+          (setf new-pop (append new-pop (funcall modifier (random-elt population) (random-elt population)))))
         (setf population new-pop)
         )
-      (setf fitnesses '())
-      (dotimes (j pop-size)
-        (setf fitnesses (append fitnesses (list (funcall evaluator (elt population j)))))
-        )
-      (print fitnesses)
       )
     (format t "~% The best found was ~a" best)
     )
@@ -274,27 +269,43 @@ random Ts and NILs, or with random 1s and 0s, your option."
 
 
 (defparameter *boolean-crossover-probability* 0.2)
-(defparameter *boolean-mutation-probability* 0.01)
+(defparameter *boolean-mutation-probability* 0.05)
 (defun boolean-vector-modifier (ind1 ind2)
   "Copies and modifies ind1 and ind2 by crossing them over with a uniform crossover,
 then mutates the children.  *crossover-probability* is the probability that any
 given allele will crossover.  *mutation-probability* is the probability that any
 given allele in a child will mutate.  Mutation simply flips the bit of the allele."
-  (dotimes (i (length ind1))
-    (if (random? *boolean-crossover-probability*)
-        (swap (elt ind1 i) (elt ind2 i))
+  (let* (
+         (copy1 (copy-list ind1))
+         (copy2 (copy-list ind2))
+         )
+    (dotimes (i (length copy1))
+      (if (random? *boolean-crossover-probability*)
+          (swap (elt copy1 i) (elt copy2 i))
+          )
+;;;can do this after we swap because it's already the new allele up to that point
+      (if (random? *boolean-mutation-probability*)
+          (setf (elt copy1 i) (mod (1+ (elt copy1 i)) 2))
         )
-    ;;;can do this after we swap because it's already the new allele up to that point
-    (if (random? *boolean-mutation-probability*)
-        (setf (elt ind1 i) (mod (1+ (elt ind1 i)) 2))
-        )
-    (if (random? *boolean-mutation-probability*)
-        (setf (elt ind2 i) (mod (1+ (elt ind2 i)) 2))
-        )
+      (if (random? *boolean-mutation-probability*)
+          (setf (elt copy2 i) (mod (1+ (elt copy2 i)) 2))
+          )
     )
-  (list ind1 ind2)
+;;;(setf ind1 (random-shuffle ind1))
+;;;(setf ind2 (random-shuffle ind2))
+  (list copy1 copy2))
     ;;; IMPLEMENT ME
   )
+
+#|
+(defun random-shuffle (ind)
+  (loop for i from (length ind) downto 2
+        do (rotatef (elt ind (random i)) (elt ind (1- i))))
+  ind
+  )
+|#
+
+;;;(print (random-shuffle '(11 9 8 7 5 2)))
 
 ;;;debug DELETE
 ;;;(defparameter *bol1* '(1 1 0 0))
@@ -330,13 +341,8 @@ its fitness."
         :evaluator #'boolean-vector-evaluator
 	:printer #'simple-printer)
 |#
-(evolve 50 100
-        :setup #'boolean-vector-sum-setup
-        :creator #'boolean-vector-creator
-        :selector #'tournament-selector
-        :modifier #'boolean-vector-modifier
-        :evaluator #'boolean-vector-evaluator
-        :printer #'simple-printer)
+
+(evolve 50 100 :setup #'boolean-vector-sum-setup :creator #'boolean-vector-creator :selector #'tournament-selector :modifier #'boolean-vector-modifier :evaluator #'boolean-vector-evaluator :printer #'simple-printer)
 
 
 
@@ -386,6 +392,7 @@ its fitness."
 (defun float-vector-creator ()
   "Creates a floating-point-vector *float-vector-length* in size, filled with
 random numbers in the range appropriate to the given problem"
+  
 ;;; IMPLEMENT ME
 ;;; you might as well use random uniform numbers from *float-vector-min*
 ;;; to *float-vector-max*.  
