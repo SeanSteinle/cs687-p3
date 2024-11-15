@@ -1,3 +1,5 @@
+;;;This file defines a grab-bag of functions which are useful across the project. Many but not all were provided by the instructor.
+
 (defmacro swap (elt1 elt2)
   "Swaps elt1 and elt2, using SETF.  Returns nil."
   (let ((temp (gensym)))
@@ -44,3 +46,9 @@ prints that fitness and individual in a pleasing manner."
     (format t "~%Best Individual of Generation...~%Fitness: ~a~%Individual:~a~%"
 	    best-fit best-ind)
     fitnesses))
+
+(defun random-shuffle (ind)
+  (loop for i from (length ind) downto 2
+        do (rotatef (elt ind (random i)) (elt ind (1- i))))
+  ind
+  )

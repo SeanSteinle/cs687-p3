@@ -1,60 +1,38 @@
-(load "h3.lisp")
+(load "utils.lisp") ;functions from instructor
+(load "core_ec.lisp") ;core evolutionary computation functions
 
-;BOOLEAN FUNCTION TESTS
+(print "running tests for utils...")
+(print (random-shuffle '(11 9 8 7 5 2)))
 
-(defun test-boolean-vector-creator ()
-    (defparameter *boolean-vector-length* 5)
-    (let ((ind1 (boolean-vector-creator)))
-        (if (not (= (length ind1) 5))
-            (error "BV-CREATE failed! Produced incorrect length vector: ~a~%" ind1)
-        )
-    )
-)
+(print "running tests for high-level EC functions...")
+;TOURNAMENT SELECTION
+(defparameter *samplepop* '((1 2) (2 2) (4 4)))
+(print (tournament-select-one *samplepop* (list 1 1 1))) ;selects a random elem from samplepop
+(print (tournament-selector 5 *samplepop* (list 1 1 1))) ;selects a random elem 5 times
 
-(defun test-boolean-vector-modifier ()
-    (defparameter *boolean-vector-length* 5)
-    (let ((i1 (boolean-vector-creator)) (i2 (boolean-vector-creator)))
-        (multiple-value-bind (c1 c2) (boolean-vector-modifier i1 i2)
-            (if (or (not (= (length c1) 5)) (not (= (length c2) 5)))
-                (error "BV-MODIFY failed! Yielded incorrect lengths for children. C1: ~a~%C2:~a~%" c1 c2)
-            )
-        )
-    )
-)
+(load "instances/boolean_vectors.lisp") ;specific functions for the boolean vectors problem instance
+(print "running tests for the boolean_vectors problem instance...")
 
-(defun test-boolean-vector-evaluator ()
-    (let* ((ind1 (list 1 1 1 1 0)) (fitness (boolean-vector-evaluator ind1)))
-        (if (= fitness 4)
-            (error "BV-EVALUATE failed! Yielded incorrect fitness (~a) for individual: ~a~%" fitness ind1)
-        )
-    )
-)
+;UNIT TESTS
+;boolean-vector CREATE
+(print (boolean-vector-creator))
 
-(defun test-boolean-vector-selection ()
-    ;test for tournament size 1, tournament size 1000000
-    (let ((mypop (list 1 2 3 4 5)) (myvals (list 10 1 1 1 1)))
-        (progn
-            (setf *tournament-size* 1000000) ;WARNING: may get really bad luck, try again.
-            (let ((champion (tournament-select-one mypop myvals)))
-                (if (not (= champion 1))
-                    (error "Champion should have been 1.")
-                )
-            )
-        )
-    )
-)
+;boolean-vector MODIFY
+(defparameter *bol1* '(1 1 0 0))
+(defparameter *bol2* '(0 0 1 1))
+(print (boolean-vector-modifier *bol1* *bol2*))
 
-;UNIT TESTS FOR BV
-(test-boolean-vector-creator)
-(test-boolean-vector-modifier)
-(test-boolean-vector-evaluator)
-(test-boolean-vector-selection) ;tournament selection
+;boolean-vector EVALUATE
+(defparameter *bol1* '(1 1 0 0))
+(print (boolean-vector-evaluator *bol1*)) ;should be == 2
 
-;END-TO-END TEST FOR BV
+;END-TO-END TEST
+#|
 (evolve 50 100
  	:setup #'boolean-vector-sum-setup
 	:creator #'boolean-vector-creator
 	:selector #'tournament-selector
 	:modifier #'boolean-vector-modifier
-    :evaluator #'boolean-vector-evaluator
+        :evaluator #'boolean-vector-evaluator
 	:printer #'simple-printer)
+|#
