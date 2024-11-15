@@ -196,13 +196,17 @@ a tree of that size"
 
 ;;; GP TREE MODIFICATION CODE
 
-(defun num-nodes (tree)
+(defun num-nodes (tree &optional (node-count 0))
   (declare (ignore tree))
   "Returns the number of nodes in tree, including the root"
-
-    
+  (loop for curr in tree
+        do (if (atom curr)
+              (setf node-count (1+ node-count))
+              (setf node-count (num-nodes curr node-count))
+            )
   )
-
+  node-count
+)
 
 (defun nth-subtree-parent (tree n)
   (declare (ignore tree))

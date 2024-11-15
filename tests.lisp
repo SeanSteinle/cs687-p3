@@ -79,22 +79,12 @@
 ;basic tree functionality -- trees are lists of lists essentially
 (setf mytree '(a (b c) (d e (f (g h i j)) k)))
 (elt mytree 0) ;curr node value
-(typep (elt mytree 0) 'symbol)
+(print (typep (elt mytree 0) 'symbol))
 (elt mytree 1) ;left child
-(typep (elt mytree 1) 'cons)
+(print (typep (elt mytree 1) 'cons))
 (elt mytree 2) ;right child
-(typep (elt mytree 2) 'cons)
-
-(defun search-tree (tree)
-  (dotimes (i (length tree)) ; Search children of this node
-    (let ((curr (elt tree i)))
-      (if (typep curr 'symbol) 
-        (print "at a value!") ; curr is a value
-        (search-tree curr) ;curr is another list, recurse
-      )
-    )
-  )
-) 
+(print (typep (elt mytree 2) 'cons))
+(print (num-nodes mytree)) ;should be 11
 
 
 (print "running tests for ants_graph problem instance...")
