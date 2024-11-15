@@ -1,166 +1,6 @@
-#|
-In this project you will produce three things:
-
-1. A high-level evolutionary computation framework
-
-2. The representation, breeding functions, and evaluations to do a simple
-GA for boolean vectors and for floating-point vectors, including a few test
-functions on each.
-
-3. The representation, breeding functions, and evaluations to do GP for
-two problems:
-A. Symbolic Regression
-B. Artificial Ant
-
-The high-level EC system will work as follows:
-
-- Simple generational evolution
-- GA-style Tournament selection
-- A simple breeding function
-- some simple statistics functions
-
-I have provided the approximate function templates I myself used to complete
-the task; with permission you can use these or go your own way, but otherwise
-please try not to deviate much from this template.
-
-The project is due approximately two and a half weeks from now or so.  Please 
-try to get it in on time.
-
-WHAT YOU MUST PROVIDE:
-
-1. Completed code which works and compiles.  As simple as possible would be nice.
-
-2. A short report describing the code you wrote and some experimentation with it.
-Some things to try:
-   -- different problems (in the vector section)
-   -- different settings of mutation and crossover parameters
-   -- different population sizes or run lengths
-Try to get a handle on how problem difficulty changes when you tweak various
-parameters.  Can you get mutation and crossover parameters which seem optimal for
-a given problem for example?  (Obviously bigger population sizes are more optimal
-but that's kinda cheating).  Note that this is a STOCHASTIC problem so you'll need
-to run a number of times and get the mean best result in order to say anything of
-consequence.  It'd be nice if the report were in LaTeX and it'd be good practice for
-you as well, but it's not necessary.  I do not accept reports in Word.  Only send
-me a PDF.
-
-Make sure your code is compiled.  In most cases (such as SBCL), your code will be
-automatically compiled.  But there exist systems (like LispWorks ("lisp" on 
-mason.gmu.edu)) where the default is to interpret the code, and so you must 
-compile your file first and then load that.
-|#
-
-
-;;; Useful Functions and Macros
-
-(defmacro swap (elt1 elt2)
-  "Swaps elt1 and elt2, using SETF.  Returns nil."
-  (let ((temp (gensym)))
-    `(let ((,temp ,elt1))
-       (setf ,elt1 ,elt2)
-       (setf ,elt2 ,temp)
-       nil)))
-
-(defmacro while (test return-value &body body)
-  "Repeatedly executes body as long as test returns true.
-Then evaluates and returns return-value"
-  `(progn (loop while ,test do (progn ,@body)) ,return-value))
-
-(defun random-elt (sequence)
-  "Returns a random element from sequence"
-  (elt sequence (random (length sequence))))
-
-(defun random? (&optional (prob 0.5))
-  "Tosses a coin of prob probability of coming up heads,
-then returns t if it's heads, else nil."
-  (< (random 1.0) prob))
-
-(defun generate-list (num function &optional no-duplicates)
-  "Generates a list of size NUM, with each element created by
-  (funcall FUNCTION).  If no-duplicates is t, then no duplicates
-are permitted (FUNCTION is repeatedly called until a unique
-new slot is created).  EQUALP is the test used for duplicates."
-  (let (bag)
-    (while (< (length bag) num) bag
-      (let ((candidate (funcall function)))
-	(unless (and no-duplicates
-		     (member candidate bag :test #'equalp))
-	  (push candidate bag))))))
-
-
-
-
-
-
+;;;This file contains code which could apply to any problem type or instance. For example, it includes the evolve() function and tournament selection functions.
 
 ;;;;;; TOP-LEVEL EVOLUTIONARY COMPUTATION FUNCTIONS 
-
-
-
-
-
-;;; TOURNAMENT SELECTION
-
-(defparameter *tournament-size* 7)
-(defun tournament-select-one (population fitnesses)
-  "Does one tournament selection and returns the selected individual."
-  (let*(
-        (n (random (length population)))
-        (best (elt population n)) ;;;get random element from the population
-        (bestf (elt fitnesses n)) ;;;get the fitnesses of that element
-        )
-    (dotimes (i (1- *tournament-size*))
-      (let* (
-             (n (random (length population)))
-             (next (elt population n))
-             (nextf (elt fitnesses n))
-             )
-        (if (> nextf bestf)
-            (progn
-              (setf best next)
-              (setf bestf nextf)
-              )
-            )
-        )
-      )
-    best
-    )
-  ;;; IMPLEMENT ME  
-  )
-
-;;;DEBUG DELETE
-;;;(defparameter *samplepop* '((1 2) (2 2) (4 4)))
-;;;(print (tournament-select-one *samplepop* #'random-elt    )    )
-
-
-(defun tournament-selector (num population fitnesses)
-  "Does NUM tournament selections, and puts them all in a list"
-  (let* (
-         (result '())
-         )
-    (dotimes (i num)
-      (setf result (append result (list (tournament-select-one population fitnesses))))
-      )
-    result
-    )
-    ;;; IMPLEMENT ME
-  )
-
-;;;DEBUG DELETE
-;;;(print (tournament-selector 5 *samplepop* #'random-elt))
-
-(defun simple-printer (pop fitnesses)  ;; I'm nice and am providing this for you.  :-)
-  "Determines the individual in pop with the best (highest) fitness, then
-prints that fitness and individual in a pleasing manner."
-  (let (best-ind best-fit)
-    (mapcar #'(lambda (ind fit)
-		(when (or (not best-ind)
-			  (< best-fit fit))
-		  (setq best-ind ind)
-		  (setq best-fit fit))) pop fitnesses)
-    (format t "~%Best Individual of Generation...~%Fitness: ~a~%Individual:~a~%"
-	    best-fit best-ind)
-    fitnesses))
 
 (defun evolve (generations pop-size
 	       &key setup creator selector modifier evaluator printer)
@@ -212,143 +52,48 @@ POP-SIZE, using various functions"
       )
     (format t "~% The best found was ~a" best)
     )
-    ;;; IMPLEMENT ME
+  )
 
+;;; TOURNAMENT SELECTION
+
+(defparameter *tournament-size* 7)
+(defun tournament-select-one (population fitnesses)
+  "Does one tournament selection and returns the selected individual."
+  (let*(
+        (n (random (length population)))
+        (best (elt population n)) ;;;get random element from the population
+        (bestf (elt fitnesses n)) ;;;get the fitnesses of that element
+        )
+    (dotimes (i (1- *tournament-size*))
+      (let* (
+             (n (random (length population)))
+             (next (elt population n))
+             (nextf (elt fitnesses n))
+             )
+        (if (> nextf bestf)
+            (progn
+              (setf best next)
+              (setf bestf nextf)
+              )
+            )
+        )
+      )
+    best
+    ) 
   )
 
 
-
-
-
-
-
-
-
-
-;;;;;; BOOLEAN VECTOR GENETIC ALGORTITHM
-
-
-
-
-
-
-;;; Creator, Modifier, Evaluator, and Setup functions for the
-;;; boolean vectors Problem.  Assume that you are evolving a bit vector
-;;; *vector-length* long.  
-
-;;; The default test function is Max-Ones.
-;;;; Max-ones is defined in section 11.2.1 of "Essentials of Metaheuristics"
-;;; by yours truly.  In that section are defined several other boolean functions
-;;; which you should also try and report on.  Some plausible ones might
-;;; include:
-
-;;; :max-ones
-;;; :trap
-;;; :leading-ones
-;;; :leading-ones-blocks
-
-
-
-(defparameter *boolean-vector-length* 100)
-(defparameter *boolean-problem* :max-ones)
-;; perhaps other problems might include... 
-
-(defun boolean-vector-creator ()
-  "Creates a boolean-vector *boolean-vector-length* in size, filled with
-random Ts and NILs, or with random 1s and 0s, your option."
-  (let
-      ((result '()))
-    (dotimes (i *boolean-vector-length*)
-      (setf result (append result (list (random 2))))
+(defun tournament-selector (num population fitnesses)
+  "Does NUM tournament selections, and puts them all in a list"
+  (let* (
+         (result '())
+         )
+    (dotimes (i num)
+      (setf result (append result (list (tournament-select-one population fitnesses))))
       )
     result
     )
-    ;;; IMPLEMENT ME
   )
-
-
-
-(defparameter *boolean-crossover-probability* 0.2)
-(defparameter *boolean-mutation-probability* 0.01)
-(defun boolean-vector-modifier (ind1 ind2)
-  "Copies and modifies ind1 and ind2 by crossing them over with a uniform crossover,
-then mutates the children.  *crossover-probability* is the probability that any
-given allele will crossover.  *mutation-probability* is the probability that any
-given allele in a child will mutate.  Mutation simply flips the bit of the allele."
-  (let* (
-         (copy1 (copy-list ind1))
-         (copy2 (copy-list ind2))
-         )
-    (dotimes (i (length copy1))
-      (if (random? *boolean-crossover-probability*)
-          (swap (elt copy1 i) (elt copy2 i))
-          )
-;;;can do this after we swap because it's already the new allele up to that point
-      (if (random? *boolean-mutation-probability*)
-          (setf (elt copy1 i) (mod (1+ (elt copy1 i)) 2))
-        )
-      (if (random? *boolean-mutation-probability*)
-          (setf (elt copy2 i) (mod (1+ (elt copy2 i)) 2))
-          )
-    )
-;;;(setf ind1 (random-shuffle ind1))
-;;;(setf ind2 (random-shuffle ind2))
-  (list copy1 copy2))
-    ;;; IMPLEMENT ME
-  )
-
-#|
-(defun random-shuffle (ind)
-  (loop for i from (length ind) downto 2
-        do (rotatef (elt ind (random i)) (elt ind (1- i))))
-  ind
-  )
-|#
-
-;;;(print (random-shuffle '(11 9 8 7 5 2)))
-
-;;;debug DELETE
-;;;(defparameter *bol1* '(1 1 0 0))
-;;;(defparameter *bol2* '(0 0 1 1))
-;;;(print (boolean-vector-modifier *bol1* *bol2*))
-
-
-(defun boolean-vector-evaluator (ind1)
-  "Evaluates an individual, which must be a boolean-vector, and returns
-its fitness."
-  (apply '+ ind1)
-    ;;; IMPLEMENT ME
-)
-
-;;;DEBUG DELETEE
-;;;(print (boolean-vector-evaluator *bol1*))
-
-
-(defun boolean-vector-sum-setup ()
-  "Does nothing.  Perhaps you might use this to set up various
-(ahem) global variables to define the problem being evaluated, I dunno."
-  )
-
-
-;;; an example way to fire up the GA.  It should easily discover
-;;; a 100% correct solution.
-#|
-(evolve 50 100
- 	:setup #'boolean-vector-sum-setup
-	:creator #'boolean-vector-creator
-	:selector #'tournament-selector
-	:modifier #'boolean-vector-modifier
-        :evaluator #'boolean-vector-evaluator
-	:printer #'simple-printer)
-|#
-
-;;;(evolve 50 100 :setup #'boolean-vector-sum-setup :creator #'boolean-vector-creator :selector #'tournament-selector :modifier #'boolean-vector-modifier :evaluator #'boolean-vector-evaluator :printer #'simple-printer)
-
-
-
-
-
-
 
 ;;;;;; FLOATING-POINT VECTOR GENETIC ALGORTITHM
 
@@ -398,7 +143,7 @@ random numbers in the range appropriate to the given problem"
       )
     result
     )
-;;; IMPLEMENT ME
+
 ;;; you might as well use random uniform numbers from *float-vector-min*
 ;;; to *float-vector-max*.  
   )
@@ -448,7 +193,7 @@ given allele in a child will mutate.  Mutation does gaussian convolution on the 
       )
     (list copy1 copy2)
     )
-;;; IMPLEMENT ME
+
 ;;; Note: crossover is probably identical to the bit-vector crossover
 ;;; See "Gaussian Convolution" (Algorithm 11) in the book for mutation
   )
@@ -470,7 +215,7 @@ its fitness."
       )
     (* -1 result) ;;;negative because we want higher fitnesses to be better
     )
-;;; IMPLEMENT ME
+
   )
 
 ;;;(print (float-vector-sum-evaluator '(1.28829 2.18818)))
@@ -597,7 +342,7 @@ in function form (X) rather than just X."
   some hints, but you should try to figure it out on your own if you can.
   |#
 
-  ;;; IMPLEMENT ME
+  
 
   )
 
@@ -607,7 +352,7 @@ in function form (X) rather than just X."
   "Picks a random number from 1 to 20, then uses ptc2 to create
 a tree of that size"
 
-    ;;; IMPLEMENT ME
+    
   )
 
 
@@ -618,7 +363,7 @@ a tree of that size"
   (declare (ignore tree))
   "Returns the number of nodes in tree, including the root"
 
-    ;;; IMPLEMENT ME
+    
   )
 
 
@@ -657,7 +402,7 @@ If n is bigger than the number of nodes in the tree
   ;1 
   ;NIL
 
-    ;;; IMPLEMENT ME
+    
   )
 
 
@@ -672,7 +417,7 @@ the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
 
-    ;;; IMPLEMENT ME
+    
 )
 
 
@@ -757,7 +502,7 @@ returning most-positive-fixnum as the output of that expression."
   ;;;     (format t "~%Warning, ~a" condition) most-positive-fixnum))
 
 
-  ;;; IMPLEMENT ME
+  
 
   )
 
@@ -969,7 +714,7 @@ direction from the given y position.  Toroidal."
 else ELSE is evaluated"
   ;; because this is an if/then statement, it MUST be implemented as a macro.
 
-    ;;; IMPLEMENT ME
+    
 )
 
 ;;;REMOVED DECLAIM FOR COMPILATION
@@ -993,20 +738,20 @@ and moves the ant forward, consuming any pellet under the new square where the
 ant is now.  Perhaps it might be nice to leave a little trail in the map showing
 where the ant had gone."
 
-      ;;; IMPLEMENT ME
+      
   )
 
 
 (defun left ()
   "Increments the move count, and turns the ant left"
 
-      ;;; IMPLEMENT ME
+      
 )
 
 (defun right ()
   "Increments the move count, and turns the ant right"
 
-      ;;; IMPLEMENT ME
+      
 )
 
 (defparameter *nonterminal-set* nil)
@@ -1030,7 +775,7 @@ where the ant had gone."
 for *num-moves* moves.  The fitness is the number of pellets eaten -- thus
 more pellets, higher (better) fitness."
 
-      ;;; IMPLEMENT ME
+      
 )
 
 ;; you might choose to write your own printer, which prints out the best
