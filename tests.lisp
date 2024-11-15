@@ -36,3 +36,31 @@
         :evaluator #'boolean-vector-evaluator
 	:printer #'simple-printer)
 |#
+
+(load "instances/float_vectors.lisp")
+(print "running tests for float_vectors problem instance...")
+
+;UNIT TESTS
+;float_vector CREATE
+(print (float-vector-creator))
+
+;float_vector MODIFY
+(print (float-vector-modifier '(1.28829 2.18818) '(2.18818 1.28829)))
+
+;float_vector EVALUATE
+(print (float-vector-sum-evaluator '(1.28829 2.18818)))
+
+;END-TO-END TEST
+#|
+(evolve 50 100
+ 	:setup #'float-vector-sum-setup
+	:creator #'float-vector-creator
+	:selector #'tournament-selector
+	:modifier #'float-vector-modifier
+        :evaluator #'float-vector-sum-evaluator
+	:printer #'simple-printer)
+|#
+
+(print "running tests for symbolic_regression problem instance...")
+
+(print "running tests for ants_graph problem instance...")

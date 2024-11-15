@@ -28,11 +28,15 @@
 
 
 (defparameter *float-vector-length* 100)
-
 (defparameter *float-problem :rastrigin)
 (defparameter *float-min* -5.12) ;; these will change based on the problem
 (defparameter *float-max* 5.12)  ;; likewise
 
+(defun float-vector-sum-setup ()
+  "Does nothing.  Perhaps you might use this function to set
+(ahem) various global variables which define the problem being evaluated
+and the floating-point ranges involved, etc.  I dunno."
+  )
 
 (defun float-vector-creator ()
   "Creates a floating-point-vector *float-vector-length* in size, filled with
@@ -47,8 +51,6 @@ random numbers in the range appropriate to the given problem"
 ;;; you might as well use random uniform numbers from *float-vector-min*
 ;;; to *float-vector-max*.  
   )
-
-;;;(print (float-vector-creator))
 
 
 (defparameter *float-crossover-probability* 0.2)
@@ -103,8 +105,6 @@ given allele in a child will mutate.  Mutation does gaussian convolution on the 
   (* (sqrt (* -2 (log (random 1.0)))) (cos (* 2 pi (random 1.0))))
   )
 
-
-
 (defun float-vector-sum-evaluator (ind1)
   "Evaluates an individual, which must be a floating point vector, and returns
 its fitness."
@@ -117,28 +117,3 @@ its fitness."
     )
 
   )
-
-;;;(print (float-vector-sum-evaluator '(1.28829 2.18818)))
-
-
-
-(defun float-vector-sum-setup ()
-  "Does nothing.  Perhaps you might use this function to set
-(ahem) various global variables which define the problem being evaluated
-and the floating-point ranges involved, etc.  I dunno."
-  )
-
-
-
-;;; an example way to fire up the GA.  
-#|
-(evolve 50 100
- 	:setup #'float-vector-sum-setup
-	:creator #'float-vector-creator
-	:selector #'tournament-selector
-	:modifier #'float-vector-modifier
-        :evaluator #'float-vector-sum-evaluator
-	:printer #'simple-printer)
-|#
-
-;(evolve 50 100 :setup #'float-vector-sum-setup :creator #'float-vector-creator :selector #'tournament-selector :modifier #'float-vector-modifier :evaluator #'float-vector-sum-evaluator :printer #'simple-printer)
