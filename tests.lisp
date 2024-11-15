@@ -61,6 +61,40 @@
 	:printer #'simple-printer)
 |#
 
+(load "instances/symbolic_regression.lisp")
 (print "running tests for symbolic_regression problem instance...")
+
+;basic queue functionality
+(gp-symbolic-regression-setup)
+(setf q (make-queue))
+(enqueue (random-elt *nonterminal-set*) q)
+(enqueue (random-elt *nonterminal-set*) q)
+(enqueue (random-elt *nonterminal-set*) q)
+(print (queue-empty-p q)) ;should be nil
+(random-dequeue q)
+(random-dequeue q)
+(random-dequeue q)
+(print (queue-empty-p q)) ;should be true
+
+;basic tree functionality -- trees are lists of lists essentially
+(setf mytree '(a (b c) (d e (f (g h i j)) k)))
+(elt mytree 0) ;curr node value
+(typep (elt mytree 0) 'symbol)
+(elt mytree 1) ;left child
+(typep (elt mytree 1) 'cons)
+(elt mytree 2) ;right child
+(typep (elt mytree 2) 'cons)
+
+(defun search-tree (tree)
+  (dotimes (i (length tree)) ; Search children of this node
+    (let ((curr (elt tree i)))
+      (if (typep curr 'symbol) 
+        (print "at a value!") ; curr is a value
+        (search-tree curr) ;curr is another list, recurse
+      )
+    )
+  )
+) 
+
 
 (print "running tests for ants_graph problem instance...")

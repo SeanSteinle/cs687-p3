@@ -43,6 +43,8 @@
     (push (1- (random 2.0)) *vals*)))
 
 (defun poly-to-learn (x) (+ (* x x x x) (* x x x) (* x x) x))
+;to get Y: (mapcar #'poly-to-learn *vals*)
+;to get Y_hat: ()
 
 ;; define the function set
 (defparameter *x* nil) ;; to be set in gp-evaluator

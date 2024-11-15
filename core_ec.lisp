@@ -1,4 +1,4 @@
-;;;This file contains code which could apply to any problem type or instance. For example, it includes the evolve() function and tournament selection functions.
+;;;This file contains code which could apply to many problem types or instances. For example, it includes the evolve() function, tournament selection functions, and genetic computation functions.
 
 ;;;;;; TOP-LEVEL EVOLUTIONARY COMPUTATION FUNCTIONS 
 
@@ -149,13 +149,13 @@ in function form (X) rather than just X."
      root <- random nonterminal
      count <- 1
      enqueue into q each child argument slot of root
-     Loop until count + size_of_q >= size
+     Loop until count + size_of_q >= size ;ADD NONTERMINALS
         remove a random argument slot s from q
         a <- random nonterminal
         count <- count + 1
         fill the slot s with a
         enqueue into q each child argument slot of a
-     Loop until size_of_q = 0
+     Loop until size_of_q = 0 ;ADD TERMINALS
         remove a random argument slot s from q
         a <- random terminal
         fill the slot s with a
