@@ -129,6 +129,21 @@ Error generated if the queue is empty."
     (swap (elt queue index) (elt queue (1- (length queue))))
     (vector-pop queue)))
 
+(defun enqueue-children (q nonterminal)
+  (let* ((arity (cadr nonterminal))
+         (children (make-list arity :initial-element nil)))
+    (dotimes (i arity)
+      (let ((child-pointer (list nil)))
+        (enqueue child-pointer q)
+        (setf (nth i children) child-pointer)))
+    (setf (cdr nonterminal) children)
+    nonterminal))
+
+#|  (let ((arity (cadr nonterminal))) ;we're putting empty lists in the queue but not actually changing the nonterminal
+    (dotimes (i arity)
+      (enqueue '() q))))
+|#
+
 (defun ptc2 (size)
   (declare (ignore size))
   "If size=1, just returns a random terminal.  Else builds and

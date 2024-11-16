@@ -76,15 +76,33 @@
 (random-dequeue q)
 (print (queue-empty-p q)) ;should be true
 
-;basic tree functionality -- trees are lists of lists essentially
-(setf mytree '(a (b c) (d e (f (g h i j)) k)))
+;basic tree pointers -- trees are lists of lists essentially
+(setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
 (elt mytree 0) ;curr node value
 (print (typep (elt mytree 0) 'symbol))
 (elt mytree 1) ;left child
 (print (typep (elt mytree 1) 'cons))
 (elt mytree 2) ;right child
 (print (typep (elt mytree 2) 'cons))
-(print (num-nodes mytree)) ;should be 11
+(print (num-nodes mytree)) ;should be 18
 
+;enqueue-children test - how enqueue-children modifies myq
+(setf myq (make-queue))
+(enqueue-children myq '(+ 2))
+(print (not (queue-empty-p myq))) ;myq should be nonempty
+(random-dequeue myq)
+(random-dequeue myq)
+(print (queue-empty-p myq)) ;myq is now empty
+
+;enqueue-children test - how enqueue-children allows for the modification of myt
+(setf myt '(+ 2))
+(setf myq (make-queue))
+(setf myt (enqueue-children myq myt)) ;enqueue's children + transforms nonterminal into node w/ empty pointers
+(print myt) ;(+ (NIL) (NIL))
+(print myq) ;((NIL) (NIL))
+(let ((child-ref (random-dequeue myq))) ;; Modify the dequeued child-ref directly
+  (setf (car child-ref) '(- 2)))  ;; Modify the car of the dequeued list
+(print myt) ;(+ (NIL) (- 2))
+(print myq) ;((NIL))
 
 (print "running tests for ants_graph problem instance...")
