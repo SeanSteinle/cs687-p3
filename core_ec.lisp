@@ -156,7 +156,7 @@ in function form (X) rather than just X."
   (if (= size 1)
       (random-elt *terminal-set*)  ; if size = 1, return random terminal
       (let ((q (make-queue))
-            (root (random-elt *nonterminal-set*))
+            (root (copy-list (random-elt *nonterminal-set*)))
             (count 1))  ; initialize queue, root, count
         (format t "transforming and enqueueing first nonterminal: ~a~%" root)
         (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
