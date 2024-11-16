@@ -107,7 +107,8 @@
 
 ;basic test for ptc2
 (typep (ptc2 1) 'symbol) ;for ptc2 1, should return X
-(ptc2 2) ;this works most of the time, BUT we're actually modifying the nonterminal set and we don't want to do that
+(ptc2 2) ;should only have a single non-terminal operator
+(ptc2 10) ;should be much larger
 
 
 (print "running tests for ants_graph problem instance...")

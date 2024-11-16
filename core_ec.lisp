@@ -139,11 +139,6 @@ Error generated if the queue is empty."
     (setf (cdr nonterminal) children)
     nonterminal))
 
-#|  (let ((arity (cadr nonterminal))) ;we're putting empty lists in the queue but not actually changing the nonterminal
-    (dotimes (i arity)
-      (enqueue '() q))))
-|#
-
 (defun ptc2 (size)
   (declare (ignore size))
   "If size=1, just returns a random terminal. Else builds and
@@ -160,6 +155,12 @@ in function form (X) rather than just X."
             (count 1))  ; initialize queue, root, count
         (format t "transforming and enqueueing first nonterminal: ~a~%" root)
         (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
+        (format t "done! q looks like: ~a~%" q)
+        (while (< (+ count (length q)) size) nil
+          (let ((new-term (copy-list (random-elt *nonterminal-set*)))
+                (child-ref (random-dequeue q)))  ; dequeue random existing reference
+            (setf (car child-ref) (enqueue-children q new-term))  ; transform new term and enqueue children nodes, then attach to existing tree via child-ref
+            (incf count)))  ; increment count
         root)))  ; return root
 
   #|
