@@ -156,12 +156,17 @@ in function form (X) rather than just X."
         (format t "transforming and enqueueing first nonterminal: ~a~%" root)
         (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
         (format t "done! q looks like: ~a~%" q)
-        (while (< (+ count (length q)) size) nil
+        (while (< (+ count (length q)) size) nil  ; ADD NONTERMINALS UNTIL SIZE IS HIT
           (let ((new-term (copy-list (random-elt *nonterminal-set*)))
                 (child-ref (random-dequeue q)))  ; dequeue random existing reference
             (setf (car child-ref) (enqueue-children q new-term))  ; transform new term and enqueue children nodes, then attach to existing tree via child-ref
             (incf count)))  ; increment count
+        (while (> (length q) 0) nil
+          (let ((new-term (list (random-elt *terminal-set*)))  ; create a list for terminal
+                (child-ref (random-dequeue q)))
+            (setf (car child-ref) new-term)))  ; attach terminal to existing tree
         root)))  ; return root
+
 
   #|
   The simple version of PTC2 you will implement is as follows:
