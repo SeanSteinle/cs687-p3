@@ -1,4 +1,4 @@
-(load "utils.lisp") ;functions from instructor
+(load "utils.lisp") ;functions from instructor (must be imported before core_ec)
 (load "core_ec.lisp") ;core evolutionary computation functions
 
 (print "running tests for utils...")
@@ -104,5 +104,10 @@
   (setf (car child-ref) '(- 2)))  ;; Modify the car of the dequeued list
 (print myt) ;(+ (NIL) (- 2))
 (print myq) ;((NIL))
+
+;basic test for ptc2
+(typep (ptc2 1) 'symbol) ;for ptc2 1, should return X
+(ptc2 2) ;this works most of the time, BUT we're actually modifying the nonterminal set and we don't want to do that
+
 
 (print "running tests for ants_graph problem instance...")

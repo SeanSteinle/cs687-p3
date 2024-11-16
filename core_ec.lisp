@@ -146,13 +146,21 @@ Error generated if the queue is empty."
 
 (defun ptc2 (size)
   (declare (ignore size))
-  "If size=1, just returns a random terminal.  Else builds and
+  "If size=1, just returns a random terminal. Else builds and
 returns a tree by repeatedly extending the tree horizon with
 nonterminals until the total number of nonterminals in the tree,
 plus the number of unfilled slots in the horizon, is >= size.
 Then fills the remaining slots in the horizon with terminals.
 Terminals like X should be added to the tree
 in function form (X) rather than just X."
+  (if (= size 1)
+      (random-elt *terminal-set*)  ; if size = 1, return random terminal
+      (let ((q (make-queue))
+            (root (random-elt *nonterminal-set*))
+            (count 1))  ; initialize queue, root, count
+        (format t "transforming and enqueueing first nonterminal: ~a~%" root)
+        (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
+        root)))  ; return root
 
   #|
   The simple version of PTC2 you will implement is as follows:
@@ -193,10 +201,6 @@ in function form (X) rather than just X."
   in those slots.  If you are totally lost as to how to implement that, I can provide
   some hints, but you should try to figure it out on your own if you can.
   |#
-
-  
-
-  )
 
 
 (defparameter *size-limit* 20)
