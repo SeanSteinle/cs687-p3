@@ -167,55 +167,11 @@ in function form (X) rather than just X."
             (setf (car child-ref) new-term)))  ; attach terminal to existing tree
         root)))  ; return root
 
-
-  #|
-  The simple version of PTC2 you will implement is as follows:
-
-  PTC2(size):
-  if size = 1, return a random terminal
-  else
-     q <- make-queue
-     root <- random nonterminal
-     count <- 1
-     enqueue into q each child argument slot of root
-     Loop until count + size_of_q >= size ;ADD NONTERMINALS
-        remove a random argument slot s from q
-        a <- random nonterminal
-        count <- count + 1
-        fill the slot s with a
-        enqueue into q each child argument slot of a
-     Loop until size_of_q = 0 ;ADD TERMINALS
-        remove a random argument slot s from q
-        a <- random terminal
-        fill the slot s with a
-     return root
-
-
-  Note that "terminals" will all be considered to be
-  zero-argument functions.  Thus PTC might generate the
-  s-expression tree:
-
-  (cos (+ (x) (- (x) (x)) (sin (x))))
-
-  but it should NOT generate the tree:
-
-  (cos (+ x (- x x) (sin x)))
-
-
-  Note that this has some gotchas: the big gotcha is that you have to keep track of
-  argument slots in lisp s-expressions, and not just pointers to the values presently
-  in those slots.  If you are totally lost as to how to implement that, I can provide
-  some hints, but you should try to figure it out on your own if you can.
-  |#
-
-
 (defparameter *size-limit* 20)
 (defun gp-creator ()
   "Picks a random number from 1 to 20, then uses ptc2 to create
 a tree of that size"
-
-    
-  )
+  (ptc2 (1+ (random 20))))
 
 
 

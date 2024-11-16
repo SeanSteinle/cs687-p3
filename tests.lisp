@@ -62,7 +62,7 @@
 |#
 
 (load "instances/symbolic_regression.lisp")
-(print "running tests for symbolic_regression problem instance...")
+(print "running tests for generic genetic programming problems...")
 
 ;basic queue functionality
 (gp-symbolic-regression-setup)
@@ -105,10 +105,14 @@
 (print myt) ;(+ (NIL) (- 2))
 (print myq) ;((NIL))
 
-;basic test for ptc2
+;basic tests for ptc2
 (typep (ptc2 1) 'symbol) ;for ptc2 1, should return X
 (ptc2 2) ;should only have a single non-terminal operator
 (ptc2 10) ;should be much larger
+
+(gp-creator)
+
+(print "running tests for symbolic regression problem instance...")
 
 
 (print "running tests for ants_graph problem instance...")
