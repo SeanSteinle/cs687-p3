@@ -109,8 +109,22 @@
 (typep (ptc2 1) 'symbol) ;for ptc2 1, should return X
 (ptc2 2) ;should only have a single non-terminal operator
 (ptc2 10) ;should be much larger
-
 (gp-creator)
+
+;gp mutation - nth-subtree-parent tests
+(setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
+(nth-subtree-parent mytree 10)
+
+#|
+(dotimes (x 12)
+  (print (nth-subtree-parent '(a (b c) (d e (f (g h i j)) k)) x)))
+
+
+(setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
+(dotimes (i 34)
+  (format t "got ~ath tree: ~a~%" i (nth-subtree-parent mytree i)))
+
+|#
 
 (print "running tests for symbolic regression problem instance...")
 

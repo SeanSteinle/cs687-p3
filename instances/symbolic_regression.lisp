@@ -83,6 +83,6 @@ returning most-positive-fixnum as the output of that expression."
 	:creator #'gp-creator
 	:selector #'tournament-selector
 	:modifier #'gp-modifier
-        :evaluator #'gp-symbolic-regression-evaluator
+  :evaluator #'gp-symbolic-regression-evaluator
 	:printer #'simple-printer)
 |#

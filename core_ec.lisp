@@ -173,8 +173,6 @@ in function form (X) rather than just X."
 a tree of that size"
   (ptc2 (1+ (random 20))))
 
-
-
 ;;; GP TREE MODIFICATION CODE
 
 (defun num-nodes (tree &optional (node-count 0))
@@ -189,42 +187,22 @@ a tree of that size"
   node-count
 )
 
-(defun nth-subtree-parent (tree n)
-  (declare (ignore tree))
-  (declare (ignore n))
-  "Given a tree, finds the nth node by depth-first search though
-the tree, not including the root node of the tree (0-indexed). If the
-nth node is NODE, let the parent node of NODE is PARENT,
-and NODE is the ith child of PARENT (starting with 0),
-then return a list of the form (PARENT i).  For example, in
-the tree (a (b c d) (f (g (h) i) j)), let's say that (g (h) i)
-is the chosen node.  Then we return ((f (g (h) i) j) 0).
-
-If n is bigger than the number of nodes in the tree
- (not including the root), then we return n - nodes_in_tree
- (except for root)."
-
-  ;;; this is best described with an example:
-  ;    (dotimes (x 12)
-  ;           (print (nth-subtree-parent
-  ;                       '(a (b c) (d e (f (g h i j)) k))
-  ;                        x)))
-  ;;; result:
-  ;((A (B C) (D E (F (G H I J)) K)) 0) 
-  ;((B C) 0) 
-  ;((A (B C) (D E (F (G H I J)) K)) 1) 
-  ;((D E (F (G H I J)) K) 0) 
-  ;((D E (F (G H I J)) K) 1) 
-  ;((F (G H I J)) 0) 
-  ;((G H I J) 0) 
-  ;((G H I J) 1) 
-  ;((G H I J) 2) 
-  ;((D E (F (G H I J)) K) 2) 
-  ;0 
-  ;1 
-  ;NIL
-
-    
+(defun nth-subtree-parent (tree n &optional (node-count 0)) ;SHOULD TAKE N
+  "Given a tree, finds the nth node by depth-first search through
+the tree, not including the root node of the tree (0-indexed)."
+  ;should be similar to num-nodes but check from parent
+  (loop for curr in tree
+    do (if (and (atom curr) (<= node-count n))
+          (progn
+            (format t "(node count=~a) at node ~a with tree ~a~%" node-count curr tree)
+            ;we need to check each child in tree! elt 1:num-children
+            ;^ or use 
+            (setf node-count (1+ node-count))
+          )
+          (setf node-count (nth-subtree-parent curr n node-count))
+        )
+  )
+  node-count
   )
 
 
@@ -238,6 +216,24 @@ ind1 and ind2 are each mutated using subtree mutation, where
 the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
+  (if (random?)
+    () ;crossover
+    () ;mutation
+  )
+  #|
+  for crossover, we do the following
+  1. pick two random numbers, i and j.
+  2. get the ith subtree of ind1, get the jth subtree of ind1.
+  3. swap the subtrees
 
-    
+  for mutation, we do the following to BOTH trees
+  1. pick a random number, i.
+  2. get the ith subtree
+  3. swap the ith subtree with (ptc2 (1+ (random 10)))
+   
+  to swap a random subtree of tree with a variable X, you
+  (multiple-value-bind (parent child-index) (nth-parent-tree tree (1+ (random 10)))
+    (setf (elt parent child-index) X)
+  )
+   |#
 )
