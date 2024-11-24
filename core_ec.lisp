@@ -233,6 +233,58 @@ If n is bigger than the number of nodes in the tree
 )
 
 (defparameter *mutation-size-limit* 10)
+
+(defun crossover (ind1 ind2)
+  (let* (
+      (i1-rand (random (num-nodes ind1)))
+      (i1-nsp (nth-subtree-parent ind1 i1-rand))
+      (i1-parent (first i1-nsp))
+      (i1-cindex (second i1-nsp))
+      (i1-subtree (elt i1-parent i1-cindex))
+
+      (i2-rand (random (num-nodes ind2)))
+      (i2-nsp (nth-subtree-parent ind2 i2-rand))
+      (i2-parent (first i2-nsp))
+      (i2-cindex (second i2-nsp))
+      (i2-subtree (elt i2-parent i2-cindex))
+    )
+    (format t "~%rand=(~a); subtree=~a; parent=~a;~%" i1-rand i1-subtree i1-parent)
+    (format t "rand=(~a); subtree=~a; parent=~a;~%" i2-rand i2-subtree i2-parent)
+  )
+  #|
+      (multiple-value-bind (parent child-index) (nth-subtree-parent tree (1+ (random 10)))
+      (setf (elt parent child-index) X)
+    )
+
+    (multiple-value-bind (i1-parent i1-cindex) (nth-subtree-parent ind1 i)
+      (multiple-value-bind (i2-parent i2-cindex) (nth-subtree-parent ind2 j)
+        (list one two three four)))
+
+
+  for crossover, we do the following
+  1. pick two random numbers, i and j.
+  2. get the ith subtree of ind1, get the jth subtree of ind1.
+  3. swap the subtrees (rotatef)?
+
+  (multiple-value-bind (parent child-index) (nth-parent-tree tree (1+ (random 10)))
+    (setf (elt parent child-index) X)
+  )
+  |#
+)
+
+(defun mutate (ind1 ind2)
+  #|
+  for mutation, we do the following to BOTH trees
+  1. pick a random number, i.
+  2. get the ith subtree
+  3. swap the ith subtree with (ptc2 (1+ (random 10)))
+
+  (multiple-value-bind (parent child-index) (nth-parent-tree tree (1+ (random 10)))
+    (setf (elt parent child-index) X)
+  )
+   |#
+)
+
 (defun gp-modifier (ind1 ind2)
   (declare (ignore ind1))
   (declare (ignore ind2))
@@ -243,8 +295,8 @@ the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
   (if (random?)
-    () ;crossover
-    () ;mutation
+    (crossover ind1 ind2) ;crossover (separate functions for testing purposes)
+    (mutate ind1 ind2) ;mutations
   )
   #|
   for crossover, we do the following

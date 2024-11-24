@@ -122,6 +122,7 @@
 	;can't??? not ideal but we'll work with it for now.
 ;make behavior normal for n>len(tree)
 	;this won't work either ? hm...
+;TEST DEEP COPY, nsp shouldnt mutate things.
 
 (setf simple-tree '(* (X) (- (X) (X))))
 (setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
@@ -138,6 +139,10 @@
   (print (list x (nth-subtree-parent mytree x)    )  )
   (setf current -1) ;;have to reset special variable before every run or won't work
   )
+
+;testing GP modify
+;(gp-modifier mytree simple-tree)
+(crossover simple-tree mytree)
 
 (print "running tests for symbolic regression problem instance...")
 
