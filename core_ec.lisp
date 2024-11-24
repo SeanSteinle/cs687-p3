@@ -248,8 +248,10 @@ If n is bigger than the number of nodes in the tree
       (i2-cindex (second i2-nsp))
       (i2-subtree (elt i2-parent i2-cindex))
     )
-    (format t "~%rand=(~a); subtree=~a; parent=~a;~%" i1-rand i1-subtree i1-parent)
-    (format t "rand=(~a); subtree=~a; parent=~a;~%" i2-rand i2-subtree i2-parent)
+    (format t "~%tree=~a; rand=(~a); subtree=~a; parent=~a;~%" ind1 i1-rand i1-subtree i1-parent)
+    (format t "tree=~a; rand=(~a); subtree=~a; parent=~a;~%" ind2 i2-rand i2-subtree i2-parent)
+    ;
+    (format t "resulting tree: ")
   )
   #|
       (multiple-value-bind (parent child-index) (nth-subtree-parent tree (1+ (random 10)))
