@@ -54,8 +54,8 @@ prints that fitness and individual in a pleasing manner."
   )
 
 ;;;NEED THIS
-(defvar current 0)
-;;;remember to set to 0 before starting subtree?
+(defvar current -1)
+;;;remember to set to -1 before starting subtree?
 (setf current -1)
 
 (defun nth-subtree-parent (tree n)
