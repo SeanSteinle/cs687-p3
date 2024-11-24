@@ -52,3 +52,46 @@ prints that fitness and individual in a pleasing manner."
         do (rotatef (elt ind (random i)) (elt ind (1- i))))
   ind
   )
+
+;;;NEED THIS
+(defvar current 0)
+;;;remember to set to 0 before starting subtree?
+(setf current -1)
+
+(defun nth-subtree-parent (tree n)
+  "Given a tree, finds the nth node by depth-first search though
+the tree, not including the root node of the tree (0-indexed). If the
+nth node is NODE, let the parent node of NODE is PARENT,
+and NODE is the ith child of PARENT (starting with 0),
+then return a list of the form (PARENT i).  For example, in
+the tree (a (b c d) (f (g (h) i) j)), let's say that (g (h) i)
+is the chosen node.  Then we return ((f (g (h) i) j) 0).
+
+If n is bigger than the number of nodes in the tree
+ (not including the root), then we return n - nodes_in_tree
+ (except for root)."
+
+  (let* ((place 0) (result (list tree 0)))
+    (dolist (i (rest tree))
+      (setf current (1+ current))
+      (if (= current n)
+          (progn
+            (setf result (list tree place))
+            (return)
+            )
+          )
+      (if (< current n)
+          (progn
+            (if (typep i 'sequence)
+                (progn
+                  (setf result (nth-subtree-parent i n))
+                  )
+                )
+            )
+          )
+      (setf place (1+ place))
+      )
+    result
+    )
+  )
+  
