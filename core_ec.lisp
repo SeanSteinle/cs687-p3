@@ -187,6 +187,51 @@ a tree of that size"
   node-count
 )
 
+(defun nth-subtree-parent (tree n)
+  "Given a tree, finds the nth node by depth-first search though
+the tree, not including the root node of the tree (0-indexed). If the
+nth node is NODE, let the parent node of NODE is PARENT,
+and NODE is the ith child of PARENT (starting with 0),
+then return a list of the form (PARENT i).  For example, in
+the tree (a (b c d) (f (g (h) i) j)), let's say that (g (h) i)
+is the chosen node.  Then we return ((f (g (h) i) j) 0).
+
+If n is bigger than the number of nodes in the tree
+ (not including the root), then we return n - nodes_in_tree
+ (except for root).
+ 
+ NOTE: Requires setting global variable current=-1 before and after invocations.
+ We tried writing a wrapper but didn't work right. Such is life.
+ "
+  (nsp-helper tree n)
+)
+  
+(defun nsp-helper (tree n)
+  """Implements recursive cases (n!=0 AND n<len(tree)) for nth-subparent-tree."""
+  (let* ((place 0) (result (list tree 0)))
+    (dolist (i (rest tree))
+      (setf current (1+ current))
+      (if (= current n)
+          (progn
+            (setf result (list tree place))
+            (return)
+            )
+          )
+      (if (< current n)
+          (progn
+            (if (typep i 'sequence)
+                (progn
+                  (setf result (nth-subtree-parent i n))
+                  )
+                )
+            )
+          )
+      (setf place (1+ place))
+      )
+    result
+    )
+)
+
 (defparameter *mutation-size-limit* 10)
 (defun gp-modifier (ind1 ind2)
   (declare (ignore ind1))

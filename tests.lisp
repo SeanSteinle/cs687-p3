@@ -121,6 +121,7 @@
 ;write wrapper to clean it up
 	;can't??? not ideal but we'll work with it for now.
 ;make behavior normal for n>len(tree)
+	;this won't work either ? hm...
 
 (setf simple-tree '(* (X) (- (X) (X))))
 (setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
