@@ -142,7 +142,7 @@
 
 ;testing GP modify
 ;(gp-modifier mytree simple-tree)
-(crossover simple-tree mytree)
+(crossover simple-tree simple-tree)
 
 (print "running tests for symbolic regression problem instance...")
 

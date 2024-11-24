@@ -52,3 +52,11 @@ prints that fitness and individual in a pleasing manner."
         do (rotatef (elt ind (random i)) (elt ind (1- i))))
   ind
   )
+
+(defun deep-copy-list (lst)
+  "Recursively copy a nested list."
+  (mapcar (lambda (element)
+            (if (listp element)
+                (deep-copy-list element)
+                element))
+          lst))

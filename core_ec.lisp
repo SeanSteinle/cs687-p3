@@ -236,22 +236,25 @@ If n is bigger than the number of nodes in the tree
 
 (defun crossover (ind1 ind2)
   (let* (
-      (i1-rand (random (num-nodes ind1)))
-      (i1-nsp (nth-subtree-parent ind1 i1-rand))
+      (i1 (deep-copy-list ind1))
+      (i1-rand (random (num-nodes i1)))
+      (i1-nsp (nth-subtree-parent i1 i1-rand))
       (i1-parent (first i1-nsp))
       (i1-cindex (second i1-nsp))
       (i1-subtree (elt i1-parent i1-cindex))
 
-      (i2-rand (random (num-nodes ind2)))
-      (i2-nsp (nth-subtree-parent ind2 i2-rand))
+      (i2 (deep-copy-list ind2))
+      (i2-rand (random (num-nodes i2)))
+      (i2-nsp (nth-subtree-parent i2 i2-rand))
       (i2-parent (first i2-nsp))
       (i2-cindex (second i2-nsp))
       (i2-subtree (elt i2-parent i2-cindex))
     )
-    (format t "~%tree=~a; rand=(~a); subtree=~a; parent=~a;~%" ind1 i1-rand i1-subtree i1-parent)
-    (format t "tree=~a; rand=(~a); subtree=~a; parent=~a;~%" ind2 i2-rand i2-subtree i2-parent)
-    ;
-    (format t "resulting tree: ")
+    (format t "~%tree=~a; rand=(~a); subtree=~a; parent=~a;~%" i1 i1-rand i1-subtree i1-parent)
+    (format t "tree=~a; rand=(~a); subtree=~a; parent=~a;~%" i2 i2-rand i2-subtree i2-parent)
+    ;GOOD! swapping, but getting just the head of subtrees, want the entire thing.
+    (rotatef (elt i1-parent i1-cindex) (elt i2-parent i2-cindex)) ;THE PROBLEM IS THE SUBTREE REFERENCES HERE -- WE NEED TO SETF on the subtrees
+    (format t "ind1 original: ~a; ind1 new: ~a;~%ind2 original: ~a; ind2 new: ~a;" ind1 i1 ind2 i2)
   )
   #|
       (multiple-value-bind (parent child-index) (nth-subtree-parent tree (1+ (random 10)))
