@@ -126,6 +126,15 @@
 
 |#
 
+(print "running tests for n-th subtree function")
+
+(dotimes (x 12)
+  (print (list x (nth-subtree-parent '(a (b c) (d e (f (g h i j)) k)) x)    )  )
+  (setf current -1) ;;have to reset special variable before every run or won't work
+  )
+;;slightly different format than provided example, I appended x to the start of the function just so lines are easier to read
+;;DOES NOT WORK FOR x = 10, 11, 12 no idea what prof wants from these values
+
 (print "running tests for symbolic regression problem instance...")
 
 
