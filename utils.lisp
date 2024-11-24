@@ -53,11 +53,6 @@ prints that fitness and individual in a pleasing manner."
   ind
   )
 
-;;;NEED THIS
-(defvar current -1)
-;;;remember to set to -1 before starting subtree?
-(setf current -1)
-
 (defun nth-subtree-parent (tree n)
   "Given a tree, finds the nth node by depth-first search though
 the tree, not including the root node of the tree (0-indexed). If the
@@ -69,8 +64,20 @@ is the chosen node.  Then we return ((f (g (h) i) j) 0).
 
 If n is bigger than the number of nodes in the tree
  (not including the root), then we return n - nodes_in_tree
- (except for root)."
-
+ (except for root).
+ 
+ NOTE: Requires setting global variable current=-1 before and after invocations.
+ We tried writing a wrapper but didn't work right. Such is life.
+ "
+  (nsp-helper tree n)
+;  (if (< n (num-nodes tree)) ;structure other cases here
+;
+;    (- (num-nodes tree) n)
+;  )
+  )
+  
+(defun nsp-helper (tree n)
+  """Implements recursive cases (n!=0 AND n<len(tree)) for nth-subparent-tree."""
   (let* ((place 0) (result (list tree 0)))
     (dolist (i (rest tree))
       (setf current (1+ current))
@@ -93,5 +100,4 @@ If n is bigger than the number of nodes in the tree
       )
     result
     )
-  )
-  
+)

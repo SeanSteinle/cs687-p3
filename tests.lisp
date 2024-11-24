@@ -112,21 +112,31 @@
 (gp-creator)
 
 ;gp mutation - nth-subtree-parent tests
+;testing deep copy
 
 ;TD
-;how well does nsp work?
+;how well does nsp work? X
+	;works well for simple-tree, but n=0 should probably return something different?
+	;works well for mytree too.
 ;write wrapper to clean it up
+	;can't??? not ideal but we'll work with it for now.
 ;make behavior normal for n>len(tree)
 
+(setf simple-tree '(* (X) (- (X) (X))))
 (setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
-(nth-subtree-parent mytree 10)
 
-(dotimes (x 25)
+(defvar current -1) ;set global var
+(setf current -1) ;;;remember to set to -1 before starting subtree?
+
+(dotimes (x 10)
+  (print (list x (nth-subtree-parent simple-tree x)    )  )
+  (setf current -1) ;;have to reset special variable before every run or won't work
+  )
+
+(dotimes (x 20)
   (print (list x (nth-subtree-parent mytree x)    )  )
   (setf current -1) ;;have to reset special variable before every run or won't work
   )
-;;slightly different format than provided example, I appended x to the start of the function just so lines are easier to read
-;;DOES NOT WORK FOR x = 10, 11, 12 no idea what prof wants from these values
 
 (print "running tests for symbolic regression problem instance...")
 
