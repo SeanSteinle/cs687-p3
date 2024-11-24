@@ -112,24 +112,17 @@
 (gp-creator)
 
 ;gp mutation - nth-subtree-parent tests
+
+;TD
+;how well does nsp work?
+;write wrapper to clean it up
+;make behavior normal for n>len(tree)
+
 (setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
 (nth-subtree-parent mytree 10)
 
-#|
-(dotimes (x 12)
-  (print (nth-subtree-parent '(a (b c) (d e (f (g h i j)) k)) x)))
-
-
-(setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
-(dotimes (i 34)
-  (format t "got ~ath tree: ~a~%" i (nth-subtree-parent mytree i)))
-
-|#
-
-(print "running tests for n-th subtree function")
-
-(dotimes (x 12)
-  (print (list x (nth-subtree-parent '(a (b c) (d e (f (g h i j)) k)) x)    )  )
+(dotimes (x 25)
+  (print (list x (nth-subtree-parent mytree x)    )  )
   (setf current -1) ;;have to reset special variable before every run or won't work
   )
 ;;slightly different format than provided example, I appended x to the start of the function just so lines are easier to read

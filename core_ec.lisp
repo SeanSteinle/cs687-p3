@@ -187,25 +187,6 @@ a tree of that size"
   node-count
 )
 
-(defun nth-subtree-parent (tree n &optional (node-count 0)) ;SHOULD TAKE N
-  "Given a tree, finds the nth node by depth-first search through
-the tree, not including the root node of the tree (0-indexed)."
-  ;should be similar to num-nodes but check from parent
-  (loop for curr in tree
-    do (if (and (atom curr) (<= node-count n))
-          (progn
-            (format t "(node count=~a) at node ~a with tree ~a~%" node-count curr tree)
-            ;we need to check each child in tree! elt 1:num-children
-            ;^ or use 
-            (setf node-count (1+ node-count))
-          )
-          (setf node-count (nth-subtree-parent curr n node-count))
-        )
-  )
-  node-count
-  )
-
-
 (defparameter *mutation-size-limit* 10)
 (defun gp-modifier (ind1 ind2)
   (declare (ignore ind1))
