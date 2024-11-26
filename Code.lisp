@@ -87,7 +87,13 @@ new slot is created).  EQUALP is the test used for duplicates."
 		     (member candidate bag :test #'equalp))
 	  (push candidate bag))))))
 
-
+(defun deep-copy-list (lst)
+  "Recursively copy a nested list."
+  (mapcar (lambda (element)
+            (if (listp element)
+                (deep-copy-list element)
+                element))
+          lst))
 
 
 
@@ -424,7 +430,7 @@ given allele in a child will mutate.  Mutation does gaussian convolution on the 
           )
       (if (random? *float-mutation-probability*)
           (loop
-            (let ((num (box-muller)))
+            (let ((num (* *float-mutation-variance* (box-muller))))
               (if (and (< (+ (elt copy1 i) num) *float-max*) (> (+ (elt copy1 i) num) *float-min*))
                   (progn
                     (setf (elt copy1 i) (+ num (elt copy1 i)))
@@ -435,7 +441,7 @@ given allele in a child will mutate.  Mutation does gaussian convolution on the 
           )
       (if (random? *float-mutation-probability*)
           (loop
-            (let ((num (box-muller)))
+            (let ((num  (* *float-mutation-variance* (box-muller))))
               (if (and (< (+ (elt copy2 1) num) *float-max*) (> (+ (elt copy2 i) num) *float-min*))
                   (progn
                     (setf (elt copy2 i) (+ num (elt copy2 i)))
@@ -485,6 +491,7 @@ and the floating-point ranges involved, etc.  I dunno."
 
 
 
+
 ;;; an example way to fire up the GA.  
 
 #|
@@ -497,7 +504,7 @@ and the floating-point ranges involved, etc.  I dunno."
 	:printer #'simple-printer)
 |#
 
-(evolve 50 100 :setup #'float-vector-sum-setup :creator #'float-vector-creator :selector #'tournament-selector :modifier #'float-vector-modifier :evaluator #'float-vector-sum-evaluator :printer #'simple-printer)
+;;;(evolve 50 100 :setup #'float-vector-sum-setup :creator #'float-vector-creator :selector #'tournament-selector :modifier #'float-vector-modifier :evaluator #'float-vector-sum-evaluator :printer #'simple-printer)
 
 
 
@@ -547,8 +554,17 @@ Error generated if the queue is empty."
     (swap (elt queue index) (elt queue (1- (length queue))))
     (vector-pop queue)))
 
+(defun enqueue-children (q nonterminal)
+  (let* ((arity (cadr nonterminal))
+         (children (make-list arity :initial-element nil)))
+    (dotimes (i arity)
+      (let ((child-pointer (list nil)))
+        (enqueue child-pointer q)
+        (setf (nth i children) child-pointer)))
+    (setf (cdr nonterminal) children)
+    nonterminal))
+
 (defun ptc2 (size)
-  (declare (ignore size))
   "If size=1, just returns a random terminal.  Else builds and
 returns a tree by repeatedly extending the tree horizon with
 nonterminals until the total number of nonterminals in the tree,
@@ -556,7 +572,24 @@ plus the number of unfilled slots in the horizon, is >= size.
 Then fills the remaining slots in the horizon with terminals.
 Terminals like X should be added to the tree
 in function form (X) rather than just X."
-
+  (if (= size 1)
+      (random-elt *terminal-set*)  ; if size = 1, return random terminal
+      (let ((q (make-queue))
+            (root (copy-list (random-elt *nonterminal-set*)))
+            (count 1))  ; initialize queue, root, count
+        (format t "transforming and enqueueing first nonterminal: ~a~%" root)
+        (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
+        (format t "done! q looks like: ~a~%" q)
+        (while (< (+ count (length q)) size) nil  ; ADD NONTERMINALS UNTIL SIZE IS HIT
+          (let ((new-term (copy-list (random-elt *nonterminal-set*)))
+                (child-ref (random-dequeue q)))  ; dequeue random existing reference
+            (setf (car child-ref) (enqueue-children q new-term))  ; transform new term and enqueue children nodes, then attach to existing tree via child-ref
+            (incf count)))  ; increment count
+        (while (> (length q) 0) nil
+          (let ((new-term (list (random-elt *terminal-set*)))  ; create a list for terminal
+                (child-ref (random-dequeue q)))
+            (setf (car child-ref) new-term)))  ; attach terminal to existing tree
+        root))  ; return root
   #|
   The simple version of PTC2 you will implement is as follows:
 
@@ -606,25 +639,31 @@ in function form (X) rather than just X."
 (defun gp-creator ()
   "Picks a random number from 1 to 20, then uses ptc2 to create
 a tree of that size"
-
+	(ptc2 (1+ (random 20)))
     ;;; IMPLEMENT ME
-  )
+)
 
 
 
 ;;; GP TREE MODIFICATION CODE
 
-(defun num-nodes (tree)
-  (declare (ignore tree))
+(defun num-nodes (tree &optional (node-count 0))
   "Returns the number of nodes in tree, including the root"
-
+  (loop for curr in tree
+        do (if (atom curr)
+              (setf node-count (1+ node-count))
+              (setf node-count (num-nodes curr node-count))
+            )
+  )
+  node-count
     ;;; IMPLEMENT ME
   )
 
+(defvar current 0)
+;;;remember to set to 0 before starting subtree?
+(setf current -1)
 
 (defun nth-subtree-parent (tree n)
-  (declare (ignore tree))
-  (declare (ignore n))
   "Given a tree, finds the nth node by depth-first search though
 the tree, not including the root node of the tree (0-indexed). If the
 nth node is NODE, let the parent node of NODE is PARENT,
@@ -636,12 +675,38 @@ is the chosen node.  Then we return ((f (g (h) i) j) 0).
 If n is bigger than the number of nodes in the tree
  (not including the root), then we return n - nodes_in_tree
  (except for root)."
-
+  ;; (if (= 0 (length tree))
+  ;;     (print current)
+  ;;     (progn
+  ;;       (print (list (first tree) n current ))
+  ;;       (dolist (i (rest tree))
+  ;;         (setf current (1+ current))
+  ;;         (if (typep i 'sequence)
+  ;;             (progn
+  ;;               (print (list i n current))
+  ;;               (nth-subtree-parent i n)
+  ;;               )
+  ;;             (print (list i n current))
+  ;;             )
+  ;;         )
+  ;;       )
+  ;;     )
+	(setf current -1)
+	(nsp-helper tree n)
+  ;; (let* ((result (copy-tree tree) (place 0)))
+  ;;   (dolist (i tree)
+  ;;     (if (typep i'sequence)
+  ;;         (progn )
+  ;;         )
+  ;;     )
+  ;;   (list result place)
+  ;;   )
+  
   ;;; this is best described with an example:
-  ;    (dotimes (x 12)
-  ;           (print (nth-subtree-parent
-  ;                       '(a (b c) (d e (f (g h i j)) k))
-  ;                        x)))
+     ;; (dotimes (x 12)
+     ;;        (print (nth-subtree-parent
+     ;;                    '(a (b c) (d e (f (g h i j)) k))
+     ;;                     x)))
   ;;; result:
   ;((A (B C) (D E (F (G H I J)) K)) 0) 
   ;((B C) 0) 
@@ -658,25 +723,82 @@ If n is bigger than the number of nodes in the tree
   ;NIL
 
     ;;; IMPLEMENT ME
-  )
-
+)
+  
+(defun nsp-helper (tree n)
+  (let* ((place 0) (result (list tree 0)))
+    (dolist (i (rest tree))
+      (setf current (1+ current))
+      (if (= current n)
+          (progn
+            (setf result (list tree place))
+            (return)
+            )
+          )
+      (if (< current n)
+          (progn
+            (if (typep i 'sequence)
+                (progn
+                  (setf result (nth-subtree-parent i n))
+                  )
+                )
+            )
+          )
+      (setf place (1+ place))
+      )
+    result
+    )
+)
+ 
+;; (dotimes (x 12)
+;;   (print (list x (nth-subtree-parent '(a (b c) (d e (f (g h i j)) k)) x)    )  )
+;;   (setf current -1)
+;;   )
+;; (print (nth-subtree-parent '(a (b c) (d e (f (g h i j)) k)) 5))
+;; (print current)
 
 (defparameter *mutation-size-limit* 10)
 (defun gp-modifier (ind1 ind2)
-  (declare (ignore ind1))
-  (declare (ignore ind2))
   "Flips a coin.  If it's heads, then ind1 and ind2 are
 crossed over using subtree crossover.  If it's tails, then
 ind1 and ind2 are each mutated using subtree mutation, where
 the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
+  (let* (
+         (i1 (copy-list ind1))
+         (i2 (copy-list ind2))
+         )
+    (if (random? 1)
+        (progn
+          (let* (
+                 (i1-rand (random (num-nodes i1)))
+                 (i1-nsp (nth-subtree-parent i1 i1-rand))
+                 (i1-parent (first i1-nsp))
+                 (i1-cindex (second i1-nsp))
+                 (i1-subtree (nthcdr i1-cindex i1-parent))
 
+                 (i2-rand (random (num-nodes i2)))
+                 (i2-nsp (nth-subtree-parent i2 i2-rand))
+                 (i2-parent (first i2-nsp))
+                 (i2-cindex (second i2-nsp))
+                 (i2-subtree (nthcdr i2-cindex i2-parent))
+                 )
+            (print i1-nsp)
+            (print i2-nsp)
+            (print i1-subtree)
+            (print i2-subtree)
+            )
+          )
+        );;;remove 1 from random just there for testing, default is 0.5
+    (list i1 i2)
+      )
     ;;; IMPLEMENT ME
 )
 
 
 
+;;;(print (gp-modifier '(a (b c)) '(d (e f g))))
 
 
 
@@ -963,28 +1085,34 @@ direction from the given y position.  Toroidal."
 ;;; the function set you have to implement
 
 (defmacro if-food-ahead (then else)
-  (declare (ignore then))
-  (declare (ignore else))
   "If there is food directly ahead of the ant, then THEN is evaluated,
 else ELSE is evaluated"
   ;; because this is an if/then statement, it MUST be implemented as a macro.
-
+  (let* (
+         (aheadx (x-pos-at *current-x-pos* (absolute-direction *n* *current-ant-dir*)))
+         (aheady (y-pos-at *current-y-pos* (absolute-direction *n* *current-ant-dir*)))
+         )
+    (if (null (aref *map* aheadx aheady))
+        (funcall then)
+        (funcall else)
+        )
+      )
     ;;; IMPLEMENT ME
 )
 
 ;;;REMOVED DECLAIM FOR COMPILATION
 (defun progn2 (arg1 arg2)
-  (declare (ignore arg1))
-  (declare (ignore arg2))
-    "Evaluates arg1 and arg2 in succession, then returns the value of arg2"
+  "Evaluates arg1 and arg2 in succession, then returns the value of arg2"
+  (funcall arg1)
+  (funcall arg2)
 )  ;; ...though in artificial ant, the return value isn't used ... 
 
 
 (defun progn3 (arg1 arg2 arg3)
-  (declare (ignore arg1))
-  (declare (ignore arg2))
-  (declare (ignore arg3))
   "Evaluates arg1, arg2, and arg3 in succession, then returns the value of arg3"
+  (funcall arg1)
+  (funcall arg2)
+  (funcall arg3)
 )  ;; ...though in artificial ant, the return value isn't used ...
 
 (defun move ()
@@ -992,22 +1120,40 @@ else ELSE is evaluated"
 and moves the ant forward, consuming any pellet under the new square where the
 ant is now.  Perhaps it might be nice to leave a little trail in the map showing
 where the ant had gone."
-
+  (if (< *current-move* *num-moves*)
+      (progn
+        (setf *current-move* (1+ *current-move*))
+        (setf (aref *map* *current-x-pos* *current-y-pos*) (direction-to-arrow *current-ant-dir*))
+        (setf *current-x-pos* (x-pos-at *current-x-pos* (absolute-direction *n* *current-ant-dir*)))
+        (setf *current-y-pos* (y-pos-at *current-y-pos* (absolute-direction *n* *current-ant-dir*)))
+        (if (null  (aref *map* *current-x-pos* *current-y-pos*))
+            (progn
+              (setf *eaten-pellets* (1+ *eaten-pellets*))
+              ;;;I don't think we need to change the current spot from null because it will be changed when we move anyway, and only checks if there is a pellet when moving onto the space
+              )
+            )
+        )
+      )
       ;;; IMPLEMENT ME
   )
 
 
+
 (defun left ()
   "Increments the move count, and turns the ant left"
-
+  (setf *current-move* (1+ *current-move*))
+  (setf *current-ant-dir* (mod (+ 3 *current-ant-dir*) 4))
       ;;; IMPLEMENT ME
 )
 
 (defun right ()
   "Increments the move count, and turns the ant right"
-
+  (setf *current-move* (1+ *current-move*))
+  (setf *current-ant-dir* (mod (1+ *current-ant-dir*) 4))
       ;;; IMPLEMENT ME
 )
+
+
 
 (defparameter *nonterminal-set* nil)
 (defparameter *terminal-set* nil)
@@ -1021,6 +1167,8 @@ where the ant had gone."
   (setq *current-move* 0)
   (setq *eaten-pellets* 0))
 
+;;;(gp-artificial-ant-setup)
+;;;(print (gp-creator))
 
 ;; you'll need to implement this as well
 
