@@ -274,7 +274,7 @@ the two modified versions as a list."
          (i2-cindex (second i2-nsp))
          (i2-subtree (elt i2-parent i2-cindex)) ;causing errors!
          )
-    (if (random?)
+    (if (= 1 1)
         (progn ;;crossover
           ;(format t "In crossover got parents pi1 (ci=~a): ~a~% and pi2 (ci=~a): ~a~%" i1-cindex i1-parent i2-cindex i2-parent)
           (setf (elt i1-parent i1-cindex) i2-subtree)
