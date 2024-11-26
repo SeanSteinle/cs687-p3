@@ -141,8 +141,10 @@
   )
 
 ;testing GP modify
-;(gp-modifier mytree simple-tree)
-(crossover simple-tree simple-tree)
+
+(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly, will make the code look weired when it hits the ptc generation though
+(print (gp-modifier '(a (b c) (d e (f (g h i j)) k)) '(l (m n o) (p (q (r) s) t))))
+
 
 (print "running tests for symbolic regression problem instance...")
 
