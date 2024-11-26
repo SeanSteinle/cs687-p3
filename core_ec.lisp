@@ -250,82 +250,41 @@ If n is bigger than the number of nodes in the tree
   (nth-subtree-parent tree n)
 )
 
+
 (defparameter *mutation-size-limit* 10)
-
-;;I did this function slightly different so it might not running using this version of the code
-(defun crossover (ind1 ind2)
-  (let* (
-         (i1 (copy-list ind1))
-         (i2 (copy-list ind2))
-         )
-        (progn
-	  (let* (
-		 (i1-rand (random (num-nodes i1)))
-		 (i1-nsp (nth-subtree-parent i1 i1-rand))
-		 (i1-parent (first i1-nsp))
-		 (i1-cindex (second i1-nsp))
-		 (i1-subtree (elt i1-parent (1+ i1-cindex)))
-		 ;;(i1-subtree (nthcdr (1+ i1-cindex) i1-parent))
-	
-		 (i2-rand (random (num-nodes i2)))
-		 (i2-nsp (nth-subtree-parent i2 i2-rand))
-		 (i2-parent (first i2-nsp))
-		 (i2-cindex (second i2-nsp))
-		 (i2-subtree (elt i2-parent (1+ i2-cindex)))
-		 ;;(i2-subtree (nthcdr (1+ i2-cindex) i2-parent))
-		 )
-	    (print i1-nsp)
-	    (print i1-subtree)
-	    (print i2-nsp)
-	    (print i2-subtree)
-	    (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
-	    (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
-	    )
-	  )
-    (list i1 i2)
-    ;;; IMPLEMENT ME
-)
-
-(defun mutate (ind1 ind2)
-  #|
-  for mutation, we do the following to BOTH trees
-  1. pick a random number, i.
-  2. get the ith subtree
-  3. swap the ith subtree with (ptc2 (1+ (random 10)))
-
-  (multiple-value-bind (parent child-index) (nth-parent-tree tree (1+ (random 10)))
-    (setf (elt parent child-index) X)
-  )
-   |#
-)
-
 (defun gp-modifier (ind1 ind2)
-  (declare (ignore ind1))
-  (declare (ignore ind2))
   "Flips a coin.  If it's heads, then ind1 and ind2 are
 crossed over using subtree crossover.  If it's tails, then
 ind1 and ind2 are each mutated using subtree mutation, where
 the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
-  (if (random?)
-    (crossover ind1 ind2) ;crossover (separate functions for testing purposes)
-    (mutate ind1 ind2) ;mutations
+  (let* (
+         (i1 (copy-list ind1))
+         (i2 (copy-list ind2))
+         (i1-rand (random (num-nodes i1)))
+         (i1-nsp (nsp-helper i1 i1-rand))
+         (i1-parent (first i1-nsp))
+         (i1-cindex (second i1-nsp))
+         (i1-subtree (elt i1-parent (1+ i1-cindex)))
+         
+         (i2-rand (random (num-nodes i2)))
+         (i2-nsp (nsp-helper i2 i2-rand))
+         (i2-parent (first i2-nsp))
+         (i2-cindex (second i2-nsp))
+         (i2-subtree (elt i2-parent (1+ i2-cindex)))
+         )
+    (if (random?)
+        (progn ;;crossover
+          (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
+          (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
+          )
+        (progn ;;modify
+          (setf (elt i1-parent (1+ i1-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
+          (setf (elt i2-parent (1+ i2-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
+          )
+        );;;remove 1 from random just there for testing, default is 0.5
+    (list i1 i2)
+    )
+    ;;; IMPLEMENT ME
   )
-  #|
-  for crossover, we do the following
-  1. pick two random numbers, i and j.
-  2. get the ith subtree of ind1, get the jth subtree of ind1.
-  3. swap the subtrees
-
-  for mutation, we do the following to BOTH trees
-  1. pick a random number, i.
-  2. get the ith subtree
-  3. swap the ith subtree with (ptc2 (1+ (random 10)))
-   
-  to swap a random subtree of tree with a variable X, you
-  (multiple-value-bind (parent child-index) (nth-parent-tree tree (1+ (random 10)))
-    (setf (elt parent child-index) X)
-  )
-   |#
-)
