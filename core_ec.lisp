@@ -186,6 +186,9 @@ a tree of that size"
   )
   node-count
 )
+(defvar current -1)
+;;;remember to set to -1 before starting subtree?
+(setf current -1)
 
 (defun nth-subtree-parent (tree n)
   "Given a tree, finds the nth node by depth-first search though
@@ -198,17 +201,8 @@ is the chosen node.  Then we return ((f (g (h) i) j) 0).
 
 If n is bigger than the number of nodes in the tree
  (not including the root), then we return n - nodes_in_tree
- (except for root).
- 
- NOTE: Requires setting global variable current=-1 before and after invocations.
- We tried writing a wrapper but didn't work right. Such is life.
- "
-  (nsp-helper tree n)
-)
-  
-(defun nsp-helper (tree n)
-  """Implements recursive cases (n!=0 AND n<len(tree)) for nth-subparent-tree."""
-  (let* ((place 0) (result (list tree 0)))
+ (except for root)."
+   (let* ((place 0) (result (list tree 0)))
     (dolist (i (rest tree))
       (setf current (1+ current))
       (if (= current n)
@@ -230,51 +224,66 @@ If n is bigger than the number of nodes in the tree
       )
     result
     )
+  ;;; this is best described with an example:
+     ;; (dotimes (x 12)
+     ;;        (print (nth-subtree-parent
+     ;;                    '(a (b c) (d e (f (g h i j)) k))
+     ;;                     x)))
+  ;;; result:
+  ;((A (B C) (D E (F (G H I J)) K)) 0) 
+  ;((B C) 0) 
+  ;((A (B C) (D E (F (G H I J)) K)) 1) 
+  ;((D E (F (G H I J)) K) 0) 
+  ;((D E (F (G H I J)) K) 1) 
+  ;((F (G H I J)) 0) 
+  ;((G H I J) 0) 
+  ;((G H I J) 1) 
+  ;((G H I J) 2) 
+  ;((D E (F (G H I J)) K) 2) 
+  ;0 
+  ;1 
+  ;NIL
+)
+  
+(defun nsp-helper (tree n)
+  (setf current -1)
+  (nth-subtree-parent tree n)
 )
 
 (defparameter *mutation-size-limit* 10)
 
+;;I did this function slightly different so it might not running using this version of the code
 (defun crossover (ind1 ind2)
   (let* (
-      (i1 (deep-copy-list ind1))
-      (i1-rand (random (num-nodes i1)))
-      (i1-nsp (nth-subtree-parent i1 i1-rand))
-      (i1-parent (first i1-nsp))
-      (i1-cindex (second i1-nsp))
-      (i1-subtree (elt i1-parent i1-cindex))
-
-      (i2 (deep-copy-list ind2))
-      (i2-rand (random (num-nodes i2)))
-      (i2-nsp (nth-subtree-parent i2 i2-rand))
-      (i2-parent (first i2-nsp))
-      (i2-cindex (second i2-nsp))
-      (i2-subtree (elt i2-parent i2-cindex))
-    )
-    (format t "~%tree=~a; rand=(~a); subtree=~a; parent=~a;~%" i1 i1-rand i1-subtree i1-parent)
-    (format t "tree=~a; rand=(~a); subtree=~a; parent=~a;~%" i2 i2-rand i2-subtree i2-parent)
-    ;GOOD! swapping, but getting just the head of subtrees, want the entire thing.
-    (rotatef (elt i1-parent i1-cindex) (elt i2-parent i2-cindex)) ;THE PROBLEM IS THE SUBTREE REFERENCES HERE -- WE NEED TO SETF on the subtrees
-    (format t "ind1 original: ~a; ind1 new: ~a;~%ind2 original: ~a; ind2 new: ~a;" ind1 i1 ind2 i2)
-  )
-  #|
-      (multiple-value-bind (parent child-index) (nth-subtree-parent tree (1+ (random 10)))
-      (setf (elt parent child-index) X)
-    )
-
-    (multiple-value-bind (i1-parent i1-cindex) (nth-subtree-parent ind1 i)
-      (multiple-value-bind (i2-parent i2-cindex) (nth-subtree-parent ind2 j)
-        (list one two three four)))
-
-
-  for crossover, we do the following
-  1. pick two random numbers, i and j.
-  2. get the ith subtree of ind1, get the jth subtree of ind1.
-  3. swap the subtrees (rotatef)?
-
-  (multiple-value-bind (parent child-index) (nth-parent-tree tree (1+ (random 10)))
-    (setf (elt parent child-index) X)
-  )
-  |#
+         (i1 (copy-list ind1))
+         (i2 (copy-list ind2))
+         )
+        (progn
+	  (let* (
+		 (i1-rand (random (num-nodes i1)))
+		 (i1-nsp (nth-subtree-parent i1 i1-rand))
+		 (i1-parent (first i1-nsp))
+		 (i1-cindex (second i1-nsp))
+		 (i1-subtree (elt i1-parent (1+ i1-cindex)))
+		 ;;(i1-subtree (nthcdr (1+ i1-cindex) i1-parent))
+	
+		 (i2-rand (random (num-nodes i2)))
+		 (i2-nsp (nth-subtree-parent i2 i2-rand))
+		 (i2-parent (first i2-nsp))
+		 (i2-cindex (second i2-nsp))
+		 (i2-subtree (elt i2-parent (1+ i2-cindex)))
+		 ;;(i2-subtree (nthcdr (1+ i2-cindex) i2-parent))
+		 )
+	    (print i1-nsp)
+	    (print i1-subtree)
+	    (print i2-nsp)
+	    (print i2-subtree)
+	    (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
+	    (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
+	    )
+	  )
+    (list i1 i2)
+    ;;; IMPLEMENT ME
 )
 
 (defun mutate (ind1 ind2)
