@@ -153,9 +153,9 @@ in function form (X) rather than just X."
       (let ((q (make-queue))
             (root (copy-list (random-elt *nonterminal-set*)))
             (count 1))  ; initialize queue, root, count
-        (format t "transforming and enqueueing first nonterminal: ~a~%" root)
+        ;(format t "transforming and enqueueing first nonterminal: ~a~%" root)
         (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
-        (format t "done! q looks like: ~a~%" q)
+        ;(format t "done! q looks like: ~a~%" q)
         (while (< (+ count (length q)) size) nil  ; ADD NONTERMINALS UNTIL SIZE IS HIT
           (let ((new-term (copy-list (random-elt *nonterminal-set*)))
                 (child-ref (random-dequeue q)))  ; dequeue random existing reference
@@ -260,31 +260,32 @@ the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
   (let* (
-         (i1 (copy-list ind1))
-         (i2 (copy-list ind2))
+         (i1 (deep-copy-list ind1))
+         (i2 (deep-copy-list ind2))
          (i1-rand (random (num-nodes i1)))
          (i1-nsp (nsp-helper i1 i1-rand))
          (i1-parent (first i1-nsp))
          (i1-cindex (second i1-nsp))
-         (i1-subtree (elt i1-parent (1+ i1-cindex)))
+         (i1-subtree (elt i1-parent i1-cindex)) ;causing errors!
          
          (i2-rand (random (num-nodes i2)))
          (i2-nsp (nsp-helper i2 i2-rand))
          (i2-parent (first i2-nsp))
          (i2-cindex (second i2-nsp))
-         (i2-subtree (elt i2-parent (1+ i2-cindex)))
+         (i2-subtree (elt i2-parent i2-cindex)) ;causing errors!
          )
     (if (random?)
         (progn ;;crossover
-          (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
-          (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
+          ;(format t "In crossover got parents pi1 (ci=~a): ~a~% and pi2 (ci=~a): ~a~%" i1-cindex i1-parent i2-cindex i2-parent)
+          (setf (elt i1-parent i1-cindex) i2-subtree)
+          (setf (elt i2-parent i2-cindex) i1-subtree)
           )
         (progn ;;modify
-          (setf (elt i1-parent (1+ i1-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
-          (setf (elt i2-parent (1+ i2-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
+          ;(format t "In mutate got parents pi1 (ci=~a): ~a~% and pi2 (ci=~a): ~a~%" i1-cindex i1-parent i2-cindex i2-parent)
+          (setf (elt i1-parent i1-cindex) (ptc2 (1+ (random *mutation-size-limit*))))
+          (setf (elt i2-parent i2-cindex) (ptc2 (1+ (random *mutation-size-limit*))))
           )
-        );;;remove 1 from random just there for testing, default is 0.5
+        )
     (list i1 i2)
     )
-    ;;; IMPLEMENT ME
   )
