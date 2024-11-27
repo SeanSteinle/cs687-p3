@@ -118,93 +118,16 @@
 (setf current -1) ;;;remember to set to -1 before starting subtree?
 
 (dotimes (x 10)
-  (print (list x (nth-subtree-parent simple-tree x)    )  )
+  (print (list x (nsp-helper simple-tree x)    )  )
   (setf current -1) ;;have to reset special variable before every run or won't work
   )
 
 (dotimes (x 20)
-  (print (list x (nth-subtree-parent mytree x)    )  )
+  (print (list x (nsp-helper mytree x)    )  )
   (setf current -1) ;;have to reset special variable before every run or won't work
   )
 
 ;testing GP modify -- 
-#| TD
-;IT LOOKS LIKE mutate is modifying the inds!
-;also we're gettting an error where the simple-tree variable becomes unrecognizable?
-;might a deep copy save us from both of these?
-;SEEMS like this is solved ^... BUT new problem wrt not enough wrapping after modification:
-"running tests for symbolic regression problem instance..." Original Tree: (*
-                                                                            (X)
-                                                                            (-
-                                                                             (X)
-                                                                             (X)))
-T1: (* (X) (- (X) (+ ((X)) ((X)))))
-T2: (* (X) (- X (X)))
-
-"running tests for symbolic regression problem instance..." Original Tree: (*
-                                                                            (X)
-                                                                            (-
-                                                                             (X)
-                                                                             (X)))
-T1: (* (X) (- (X) X))
-T2: (* (X) (- (SIN ((COS ((EXP ((- ((X)) ((X))))))))) (X)))
-
-is it just a terminals thing
-
-errg still getting:
-my simple tree: (* (X) (- (X) (X)))
-
-
-; file: /Users/ssteinle/Desktop/gmu/cs687/cs687-p3/tests.lisp
-; in:
-;      LET* ((NEW-TREES (GP-MODIFIER SIMPLE-TREE SIMPLE-TREE))
-;        (TREE1 (FIRST NEW-TREES)) (TREE2 (SECOND NEW-TREES)))
-;     (GP-MODIFIER SIMPLE-TREE SIMPLE-TREE)
-; 
-; caught WARNING:
-;   undefined variable: COMMON-LISP-USER::SIMPLE-TREE
-
-;     (FORMAT T "Original Tree: ~a~%T1: ~a~%T2: ~a~%" SIMPLE-TREE TREE1 TREE2)
-; 
-; caught WARNING:
-;   undefined variable: COMMON-LISP-USER::SIMPLE-TREE
-; 
-; compilation unit finished
-;   Undefined variable:
-;     SIMPLE-TREE
-;   caught 2 WARNING conditions
-While evaluating the form starting at line 157, column 0
-  of #P"/Users/ssteinle/Desktop/gmu/cs687/cs687-p3/tests.lisp":"running tests for symbolic regression problem instance..." 
-
-debugger invoked on a SB-KERNEL:INDEX-TOO-LARGE-ERROR in thread
-#<THREAD tid=259 "main thread" RUNNING {70083802B3}>:
-  The index 1 is too large for a list of length 1.
-
-Type HELP for debugger help, or (SB-EXT:EXIT) to exit from SBCL.
-
-restarts (invokable by number or by possibly-abbreviated name):
-  0: [RETRY   ] Retry EVAL of current toplevel form.
-  1: [CONTINUE] Ignore error and continue loading file "/Users/ssteinle/Desktop/gmu/cs687/cs687-p3/tests.lisp".
-  2: [ABORT   ] Abort loading file "/Users/ssteinle/Desktop/gmu/cs687/cs687-p3/tests.lisp".
-  3:            Exit debugger, returning to top level.
-
-(ELT (X) 1)
-
-I think this error comes from whenever we choose a terminal as a parent:
-        (progn ;;crossover
-          (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
-          (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
-          )
-        (progn ;;modify
-          (setf (elt i1-parent (1+ i1-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
-          (setf (elt i2-parent (1+ i2-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
-          )
-        )
-As you can see, the problem is that the minimum index we use is 1 but when the parent is a terminal we can only index to 0
-BUT THEN AGAIN, we shouldn't be getting terminals for the parent spots right?
-^this might be an ants vs. symbolic-regression problem
-|#
-
 (format t "~%my simple tree: ~a~%" simple-tree)
 (print "running tests for symbolic regression problem instance...") ;it's already loaded
 (let* (
@@ -224,7 +147,22 @@ BUT THEN AGAIN, we shouldn't be getting terminals for the parent spots right?
 	(format t "Original Tree: ~a~%T1: ~a~%T2: ~a~%~%" simple-tree tree1 tree2)
 ))
 
-(print "running tests for ants_graph problem instance...")
-(load "instances/artificial_ant.lisp")
-(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly, will make the code look weired when it hits the ptc generation though
-(print (gp-modifier '(a (b c) (d e (f (g h i j)) k)) '(l (m n o) (p (q (r) s) t))))
+(setf square-double-tree '(* (+ (X) (X)) (+ (X) (X))))
+(setf *x* 0)
+(format t "evaluating square-double-tree for x=0: ~a~% "(evaluate-tree square-double-tree)) ;0
+(setf *x* 1)
+(format t "evaluating square-double-tree for x=1: ~a~% "(evaluate-tree square-double-tree)) ;4
+(setf *x* 2)
+(format t "evaluating square-double-tree for x=2: ~a~% "(evaluate-tree square-double-tree)) ;16
+(setf *x* 3)
+(format t "evaluating square-double-tree for x=3: ~a~% "(evaluate-tree square-double-tree)) ;36 
+(setf *x* 4)
+(format t "evaluating square-double-tree for x=4: ~a~% "(evaluate-tree square-double-tree)) ;64
+
+;TODO:
+;should fix the n=0 case for nsp, but may not be essential.
+
+;(print "running tests for ants_graph problem instance...")
+;(load "instances/artificial_ant.lisp")
+;(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly, will make the code look weired when it hits the ptc generation though
+;(print (gp-modifier '(a (b c) (d e (f (g h i j)) k)) '(l (m n o) (p (q (r) s) t))))

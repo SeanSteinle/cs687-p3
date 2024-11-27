@@ -267,13 +267,13 @@ the two modified versions as a list."
          (i1-nsp (nsp-helper i1 i1-rand))
          (i1-parent (first i1-nsp))
          (i1-cindex (second i1-nsp))
-         (i1-subtree (elt i1-parent (1+ i1-cindex))) ;causing errors!
+         (i1-subtree (elt i1-parent (1+ i1-cindex)))
          
          (i2-rand (random (num-nodes i2)))
          (i2-nsp (nsp-helper i2 i2-rand))
          (i2-parent (first i2-nsp))
          (i2-cindex (second i2-nsp))
-         (i2-subtree (elt i2-parent (1+ i2-cindex))) ;causing errors!
+         (i2-subtree (elt i2-parent (1+ i2-cindex)))
          )
     (if (random?)
         (progn ;;crossover

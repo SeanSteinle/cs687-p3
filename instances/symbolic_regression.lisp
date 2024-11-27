@@ -54,6 +54,17 @@
 
 
 ;;; GP SYMBOLIC REGRESSION EVALUATION
+(defun evaluate-tree (tree)
+  "Helper for symbolic-regression-evaluator. Evaluates the given tree using the current value of *x*."
+  (cond
+    ((numberp tree) tree)  ; If it's a number, return it
+    ((symbolp tree) (funcall tree))  ; If it's a symbol, call the corresponding function
+    ((listp tree)  ; If it's a list, evaluate it as a function application
+     (let ((op (car tree))
+           (args (cdr tree)))
+       (apply (symbol-function op) (mapcar #'evaluate-tree args))))
+    (t (error "Unknown tree element: ~a" tree))))
+
 
 (defun gp-symbolic-regression-evaluator (ind)
   (declare (ignore ind))
@@ -73,6 +84,7 @@ returning most-positive-fixnum as the output of that expression."
   ;;;  ....
   ;;;  (error (condition)
   ;;;     (format t "~%Warning, ~a" condition) most-positive-fixnum))
+  
   )
 
 
