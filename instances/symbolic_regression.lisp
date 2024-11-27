@@ -60,7 +60,8 @@
     ((numberp tree) tree)  ; If it's a number, return it
     ((symbolp tree) (funcall tree))  ; If it's a symbol, call the corresponding function
     ((listp tree)  ; If it's a list, evaluate it as a function application
-     (let ((op (car tree))
+     (let ((tree (elt tree 1))
+           (op (car tree))
            (args (cdr tree)))
        (apply op (mapcar #'evaluate-tree args))))  ; Directly use `op` as the function
     (t (error "Unknown tree element: ~a" tree))))

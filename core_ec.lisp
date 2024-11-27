@@ -149,7 +149,7 @@ Then fills the remaining slots in the horizon with terminals.
 Terminals like X should be added to the tree
 in function form (X) rather than just X."
   (if (= size 1)
-      (random-elt *terminal-set*)  ; if size = 1, return random terminal
+      (list (random-elt *terminal-set*))  ; if size = 1, return random terminal
       (let ((q (make-queue))
             (root (copy-list (random-elt *nonterminal-set*)))
             (count 1))  ; initialize queue, root, count
@@ -162,7 +162,7 @@ in function form (X) rather than just X."
             (setf (car child-ref) (enqueue-children q new-term))  ; transform new term and enqueue children nodes, then attach to existing tree via child-ref
             (incf count)))  ; increment count
         (while (> (length q) 0) nil
-          (let ((new-term (list (random-elt *terminal-set*)))  ; create a list for terminal
+          (let ((new-term (random-elt *terminal-set*))  ; create a list for terminal
                 (child-ref (random-dequeue q)))
             (setf (car child-ref) new-term)))  ; attach terminal to existing tree
         root)))  ; return root

@@ -162,6 +162,10 @@
 
 (format t "doing full eval against vals for square-double-tree: ~a~%" (gp-symbolic-regression-evaluator square-double-tree))
 
+;(dotimes (x 100)
+;  (format t "made tree: ~a~%" (gp-creator))
+; )
+
 #| PROBLEM:
 - trees are malformed. it could have happened in the initial create, initial modify, or later versions of these.
 - because we find it in an inital modify, it's either the initial creates or initial modifys. let's test both.
@@ -182,7 +186,7 @@ T2: (+ (* (X) (* (+ X (* (X) (X))) (X))) (* (+ (X) (COS (- (X) (X)))) (X)))
  |#
 
 ;run evolve!
-#|=
+
 (evolve 50 500
  	:setup #'gp-symbolic-regression-setup
 	:creator #'gp-creator
@@ -190,7 +194,7 @@ T2: (+ (* (X) (* (+ X (* (X) (X))) (X))) (* (+ (X) (COS (- (X) (X)))) (X)))
 	:modifier #'gp-modifier
   :evaluator #'gp-symbolic-regression-evaluator
 	:printer #'simple-printer)
-|#
+
 
 ;TODO:
 ;should fix the n=0 case for nsp, but may not be essential.
