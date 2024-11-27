@@ -186,8 +186,9 @@ a tree of that size"
   )
   node-count
 )
-(defvar current -1)
-;;;remember to set to -1 before starting subtree?
+
+(defvar current 0)
+;;;remember to set to 0 before starting subtree?
 (setf current -1)
 
 (defun nth-subtree-parent (tree n)
@@ -213,7 +214,7 @@ If n is bigger than the number of nodes in the tree
           )
       (if (< current n)
           (progn
-            (if (typep i 'sequence)
+            (if (and (typep i 'sequence) (> (length i) 1))
                 (progn
                   (setf result (nth-subtree-parent i n))
                   )
@@ -266,24 +267,24 @@ the two modified versions as a list."
          (i1-nsp (nsp-helper i1 i1-rand))
          (i1-parent (first i1-nsp))
          (i1-cindex (second i1-nsp))
-         (i1-subtree (elt i1-parent i1-cindex)) ;causing errors!
+         (i1-subtree (elt i1-parent (1+ i1-cindex))) ;causing errors!
          
          (i2-rand (random (num-nodes i2)))
          (i2-nsp (nsp-helper i2 i2-rand))
          (i2-parent (first i2-nsp))
          (i2-cindex (second i2-nsp))
-         (i2-subtree (elt i2-parent i2-cindex)) ;causing errors!
+         (i2-subtree (elt i2-parent (1+ i2-cindex))) ;causing errors!
          )
-    (if (= 1 1)
+    (if (random?)
         (progn ;;crossover
           ;(format t "In crossover got parents pi1 (ci=~a): ~a~% and pi2 (ci=~a): ~a~%" i1-cindex i1-parent i2-cindex i2-parent)
-          (setf (elt i1-parent i1-cindex) i2-subtree)
-          (setf (elt i2-parent i2-cindex) i1-subtree)
+          (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
+          (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
           )
         (progn ;;modify
           ;(format t "In mutate got parents pi1 (ci=~a): ~a~% and pi2 (ci=~a): ~a~%" i1-cindex i1-parent i2-cindex i2-parent)
-          (setf (elt i1-parent i1-cindex) (ptc2 (1+ (random *mutation-size-limit*))))
-          (setf (elt i2-parent i2-cindex) (ptc2 (1+ (random *mutation-size-limit*))))
+          (setf (elt i1-parent (1+ i1-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
+          (setf (elt i2-parent (1+ i2-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
           )
         )
     (list i1 i2)

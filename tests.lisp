@@ -216,12 +216,6 @@ BUT THEN AGAIN, we shouldn't be getting terminals for the parent spots right?
 )
 
 (dotimes (x 100) (gp-modifier simple-tree simple-tree)) ;can we do many modifications without error?
-
-(print "running tests for ants_graph problem instance...")
-(load "instances/artificial_ant.lisp")
-(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly, will make the code look weired when it hits the ptc generation though
-(print (gp-modifier '(a (b c) (d e (f (g h i j)) k)) '(l (m n o) (p (q (r) s) t))))
-
 (dotimes (x 10) (let* (
 	(new-trees (gp-modifier simple-tree simple-tree))
 	(tree1 (first new-trees))
@@ -229,3 +223,8 @@ BUT THEN AGAIN, we shouldn't be getting terminals for the parent spots right?
 )
 	(format t "Original Tree: ~a~%T1: ~a~%T2: ~a~%~%" simple-tree tree1 tree2)
 ))
+
+(print "running tests for ants_graph problem instance...")
+(load "instances/artificial_ant.lisp")
+(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly, will make the code look weired when it hits the ptc generation though
+(print (gp-modifier '(a (b c) (d e (f (g h i j)) k)) '(l (m n o) (p (q (r) s) t))))
