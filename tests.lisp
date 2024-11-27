@@ -111,7 +111,7 @@
 (ptc2 10) ;should be much larger
 (gp-creator)
 
-(setf simple-tree '(* (X) (- (X) (X))))
+(setf simple-tree '(* (x) (- (x) (x))))
 (setf mytree '(+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x))))
 
 (defvar current -1) ;set global var
@@ -139,15 +139,16 @@
 )
 
 (dotimes (x 100) (gp-modifier simple-tree simple-tree)) ;can we do many modifications without error?
-(dotimes (x 10) (let* (
-	(new-trees (gp-modifier simple-tree simple-tree))
+(dotimes (x 100) (let* (
+	(new-trees (gp-modifier mytree mytree)) ;you can get the unlisted X error for simple-tree
 	(tree1 (first new-trees))
 	(tree2 (second new-trees))
 )
-	(format t "Original Tree: ~a~%T1: ~a~%T2: ~a~%~%" simple-tree tree1 tree2)
+	(format t "Original Tree: ~a~%T1: ~a~%T2: ~a~%~%" mytree tree1 tree2)
 ))
 
 (setf square-double-tree '(* (+ (X) (X)) (+ (X) (X))))
+(format t "square-double-tree: ~a~%" square-double-tree)
 (setf *x* 0)
 (format t "evaluating square-double-tree for x=0: ~a~% "(evaluate-tree square-double-tree)) ;0
 (setf *x* 1)
@@ -158,6 +159,38 @@
 (format t "evaluating square-double-tree for x=3: ~a~% "(evaluate-tree square-double-tree)) ;36 
 (setf *x* 4)
 (format t "evaluating square-double-tree for x=4: ~a~% "(evaluate-tree square-double-tree)) ;64
+
+(format t "doing full eval against vals for square-double-tree: ~a~%" (gp-symbolic-regression-evaluator square-double-tree))
+
+#| PROBLEM:
+- trees are malformed. it could have happened in the initial create, initial modify, or later versions of these.
+- because we find it in an inital modify, it's either the initial creates or initial modifys. let's test both.
+- X's are being both over protected and under protected!
+  - test create to ensure valid lists are being made
+  - test modify to ensure mutastions are working in a reasonable way
+    - could be either MUTATE or CROSSOVER functions!
+
+ERROR EXAMPLES:
+`double projection` all over last T1 term, `under protection` in T2 addition term
+Original Tree: (+ (* (X) (* (+ (X) (* (X) (X))) (X)))
+                  (* (+ (X) (COS (- (X) (X)))) (X)))
+T1: (+ (* (X) (* (+ (X) (* (X) (X))) (X)))
+       (* (+ (X) (COS (- (X) (X))))
+          (- ((X)) ((% ((X)) ((+ ((- ((X)) ((X)))) ((X)))))))))
+T2: (+ (* (X) (* (+ X (* (X) (X))) (X))) (* (+ (X) (COS (- (X) (X)))) (X)))
+
+ |#
+
+;run evolve!
+#|=
+(evolve 50 500
+ 	:setup #'gp-symbolic-regression-setup
+	:creator #'gp-creator
+	:selector #'tournament-selector
+	:modifier #'gp-modifier
+  :evaluator #'gp-symbolic-regression-evaluator
+	:printer #'simple-printer)
+|#
 
 ;TODO:
 ;should fix the n=0 case for nsp, but may not be essential.

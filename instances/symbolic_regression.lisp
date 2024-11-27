@@ -55,14 +55,14 @@
 
 ;;; GP SYMBOLIC REGRESSION EVALUATION
 (defun evaluate-tree (tree)
-  "Helper for symbolic-regression-evaluator. Evaluates the given tree using the current value of *x*."
+  "Helper for symbolic regression evaluator. Evaluates the given tree using the current value of *x*."
   (cond
     ((numberp tree) tree)  ; If it's a number, return it
     ((symbolp tree) (funcall tree))  ; If it's a symbol, call the corresponding function
     ((listp tree)  ; If it's a list, evaluate it as a function application
      (let ((op (car tree))
            (args (cdr tree)))
-       (apply (symbol-function op) (mapcar #'evaluate-tree args))))
+       (apply op (mapcar #'evaluate-tree args))))  ; Directly use `op` as the function
     (t (error "Unknown tree element: ~a" tree))))
 
 
@@ -79,13 +79,20 @@ individual's fitness.  During evaluation, the expressions
 evaluated may overflow or underflow, or produce NaN.  Handle all
 such math errors by
 returning most-positive-fixnum as the output of that expression."
-  ;;; hint:
-  ;;; (handler-case
-  ;;;  ....
-  ;;;  (error (condition)
-  ;;;     (format t "~%Warning, ~a" condition) most-positive-fixnum))
-  
-  )
+  "Evaluates an individual by setting *x* to each of the elements in *vals* in turn,
+   then running the individual and computing the fitness."
+  (let ((z 0))
+    (dolist (val *vals*)
+      (setf *x* val)
+      (handler-case
+          (let* ((output (evaluate-tree ind))
+                 (target (poly-to-learn val))
+                 (error (abs (- output target)))) ;get abs error
+            (incf z error)) ;add to running error sum
+        (error (condition) ;any error should return very positive number
+          (format t "~%Warning, ~a" condition)
+          (setf z most-positive-fixnum))))
+    (/ 1.0 (+ 1 z))))  ; Return fitness as 1 / (1 + z)
 
 
 ;;; Example run
