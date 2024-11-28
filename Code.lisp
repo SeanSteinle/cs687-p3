@@ -487,7 +487,7 @@ its fitness."
   "Does nothing.  Perhaps you might use this function to set
 (ahem) various global variables which define the problem being evaluated
 and the floating-point ranges involved, etc.  I dunno."
-  )
+  )
 
 
 
@@ -572,23 +572,23 @@ Then fills the remaining slots in the horizon with terminals.
 Terminals like X should be added to the tree
 in function form (X) rather than just X."
   (if (= size 1)
-      (random-elt *terminal-set*)  ; if size = 1, return random terminal
+      (list '("root") (list (list (random-elt *terminal-set*)))) ; if size = 1, return random terminal
       (let ((q (make-queue))
             (root (copy-list (random-elt *nonterminal-set*)))
-            (count 1))  ; initialize queue, root, count
-        (format t "transforming and enqueueing first nonterminal: ~a~%" root)
-        (setf root (enqueue-children q root))  ; transform root and enqueue root's children nodes
-        (format t "done! q looks like: ~a~%" q)
+            (count 1)
+            (r-node (list nil))
+            )  ; initialize queue, root, count
+        (setf (car r-node) (enqueue-children q root))  ; transform root and enqueue root's children nodes
         (while (< (+ count (length q)) size) nil  ; ADD NONTERMINALS UNTIL SIZE IS HIT
           (let ((new-term (copy-list (random-elt *nonterminal-set*)))
                 (child-ref (random-dequeue q)))  ; dequeue random existing reference
             (setf (car child-ref) (enqueue-children q new-term))  ; transform new term and enqueue children nodes, then attach to existing tree via child-ref
             (incf count)))  ; increment count
         (while (> (length q) 0) nil
-          (let ((new-term (list (random-elt *terminal-set*)))  ; create a list for terminal
+          (let ((new-term (random-elt *terminal-set*))  ; create a list for terminal
                 (child-ref (random-dequeue q)))
-            (setf (car child-ref) new-term)))  ; attach terminal to existing tree
-        root))  ; return root
+            (setf (car child-ref) (list new-term))))  ; attach terminal to existing tree
+       (list '("root") r-node)))  ; return root
   #|
   The simple version of PTC2 you will implement is as follows:
 
@@ -658,8 +658,9 @@ a tree of that size"
     ;;; IMPLEMENT ME
   )
 
-(defvar current 0)
-;;;remember to set to 0 before starting subtree?
+;;;compiler decleration
+(defvar current -1)
+;;;remember to set to -1 before starting subtree?
 (setf current -1)
 
 (defun nth-subtree-parent (tree n)
@@ -696,33 +697,7 @@ If n is bigger than the number of nodes in the tree
       )
     result
     )
-  ;; (if (= 0 (length tree))
-  ;;     (print current)
-  ;;     (progn
-  ;;       (print (list (first tree) n current ))
-  ;;       (dolist (i (rest tree))
-  ;;         (setf current (1+ current))
-  ;;         (if (typep i 'sequence)
-  ;;             (progn
-  ;;               (print (list i n current))
-  ;;               (nth-subtree-parent i n)
-  ;;               )
-  ;;             (print (list i n current))
-  ;;             )
-  ;;         )
-  ;;       )
-  ;;     )
-;;	(setf current -1)
-;;	(nsp-helper tree n)
-  ;; (let* ((result (copy-tree tree) (place 0)))
-  ;;   (dolist (i tree)
-  ;;     (if (typep i'sequence)
-  ;;         (progn )
-  ;;         )
-  ;;     )
-  ;;   (list result place)
-  ;;   )
-  
+ 
   ;;; this is best described with an example:
      ;; (dotimes (x 12)
      ;;        (print (nth-subtree-parent
@@ -747,10 +722,15 @@ If n is bigger than the number of nodes in the tree
 )
   
 (defun nsp-helper (tree n)
-  (setf current -1)
-  (nth-subtree-parent tree n)
+  (if (= -1 n)
+      (list tree -1)
+      (progn
+        (setf current -1)
+        (nth-subtree-parent tree n)
+        )
+      )
 )
- 
+
 ;; (dotimes (x 12)
 ;;   (print (list x (nsp-helper '(a (b c) (d e (f (g h i j)) k)) x)))
 ;;   )
@@ -766,28 +746,38 @@ the size of the newly-generated subtrees is pickedc at random
 from 1 to 10 inclusive.  Doesn't damage ind1 or ind2.  Returns
 the two modified versions as a list."
   (let* (
-         (i1 (copy-list ind1))
-         (i2 (copy-list ind2))
+         (i1 (deep-copy-list ind1))
+         (i2 (deep-copy-list ind2))
+
+         ;;;(i1-rand 4)
          (i1-rand (random (num-nodes i1)))
          (i1-nsp (nsp-helper i1 i1-rand))
          (i1-parent (first i1-nsp))
          (i1-cindex (second i1-nsp))
-         (i1-subtree (elt i1-parent (1+ i1-cindex)))
-         
+         (i1-subtree (deep-copy-list (elt i1-parent (1+ i1-cindex))))
+         ;;(i1-subtree (elt i1-parent (1+ i1-cindex)))
+
+         ;;(i2-rand 6)
          (i2-rand (random (num-nodes i2)))
          (i2-nsp (nsp-helper i2 i2-rand))
          (i2-parent (first i2-nsp))
          (i2-cindex (second i2-nsp))
-         (i2-subtree (elt i2-parent (1+ i2-cindex)))
+         (i2-subtree (deep-copy-list (elt i2-parent (1+ i2-cindex))))
+         ;;(i2-subtree (elt i2-parent (1+ i2-cindex)))
+         ;;2nd and 3rd part can be condensed, I think subtree is needed though for preventing override 
          )
-    (if (random?)
+    (if (random?);;;just 1 for demonstration, usually default so coinflip
         (progn ;;crossover
+          ;; (print i1-nsp)
+          ;; (print i2-nsp)
+          ;; (print i1-subtree)
+          ;; (print i2-subtree)
           (setf (elt i1-parent (1+ i1-cindex)) i2-subtree)
           (setf (elt i2-parent (1+ i2-cindex)) i1-subtree)
           )
         (progn ;;modify
-          (setf (elt i1-parent (1+ i1-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
-          (setf (elt i2-parent (1+ i2-cindex)) (ptc2 (1+ (random *mutation-size-limit*))))
+          (setf (elt i1-parent (1+ i1-cindex)) (second (ptc2 (1+ (random *mutation-size-limit*)))))
+          (setf (elt i2-parent (1+ i2-cindex)) (second (ptc2 (1+ (random *mutation-size-limit*)))))
           )
         );;;remove 1 from random just there for testing, default is 0.5
     (list i1 i2)
@@ -796,10 +786,29 @@ the two modified versions as a list."
   )
 
 
-(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly
-(print (gp-modifier '(a (b c) (d e (f (g h i j)) k)) '(l (m n o) (p (q (r) s) t))))
+;;;(gp-artificial-ant-setup);;;a setup needs to be called for ptc2 to work properly
+;;(print (gp-modifier '(Q a (b c) (d e (f (g h i j)) k)) '(T 1 (2 3 4) (5 (6 (7) 8) 9))))
 
-
+;; (defparameter *simple-tree* '((1) (* (x) (- (x) (x)))  )   )
+;; (defparameter *simple-tree2* '((1)  (* (x) (- (x) (x)))  )          )
+;; (defparameter *mytree* '((2)  (+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x)))   )     )
+;; (gp-symbolic-regression-setup)
+;; (defparameter *my-tree* (ptc2 6))
+;; (defparameter *simple-tree* (ptc2 4))
+;; (defparameter *t-t* (list *my-tree* *simple-tree*))
+;; (dotimes (x 15)
+;;   (setf *t-t* (gp-modifier (first *t-t*) (second *t-t*)))
+;;   (print (first *t-t*))
+;;   )
+;; ;; (print (equal *simple-tree* *simple-tree2*))
+;; ;;;(print (gp-modifier *simple-tree* *mytree*))
+;; ;; (print (gp-modifier *simple-tree* *mytree*))
+;; (print (equal *simple-tree* *simple-tree2*))
+;; (print (first *t-t*))
+;; (print "blank")
+;; (print (second *t-t*))
+;; ;; (print *simple-tree*)
+;; ;; (print *mytree*)
 
 ;;; SYMBOLIC REGRESSION
 ;;; This problem domain is similar, more or less, to the GP example in
@@ -845,6 +854,7 @@ the two modified versions as a list."
   (dotimes (v *num-vals*)
     (push (1- (random 2.0)) *vals*)))
 
+
 (defun poly-to-learn (x) (+ (* x x x x) (* x x x) (* x x) x))
 
 ;; define the function set
@@ -853,13 +863,25 @@ the two modified versions as a list."
 (defun % (x y) (if (= y 0) 0 (/ x y)))  ;; "protected division"
 ;;; the rest of the functions are standard Lisp functions
 
+(defun evaluate-tree (tree)
+  "Helper for symbolic regression evaluator. Evaluates the given tree using the current value of *x*."
+  (setf tree (first tree))
+  (cond
+    ((numberp tree) tree)  ; If it's a number, return it
+    ((symbolp tree) (funcall tree))  ; If it's a symbol, call the corresponding function
+    ((listp tree)  ; If it's a list, evaluate it as a function application
+     (let ((tree (elt tree 1))
+           (op (car tree))
+           (args (cdr tree)))
+       (apply op (mapcar #'evaluate-tree args))))  ; Directly use `op` as the function
+    (t (error "Unknown tree element: ~a" tree))))
 
-
-
+;; (gp-symbolic-regression-setup)
+;; (defparameter *tree* (ptc2 6))
+;; (print (first (rest *tree*)   ) )
 ;;; GP SYMBOLIC REGRESSION EVALUATION
 
 (defun gp-symbolic-regression-evaluator (ind)
-  (declare (ignore ind))
   "Evaluates an individual by setting *x* to each of the
 elements in *vals* in turn, then running the individual and
 get the output minus (poly-to-learn *x*).  Take the
@@ -876,12 +898,31 @@ returning most-positive-fixnum as the output of that expression."
   ;;;  ....
   ;;;  (error (condition)
   ;;;     (format t "~%Warning, ~a" condition) most-positive-fixnum))
+  (let ((z 0))
+    (dolist (val *vals*)
+      (setf *x* val)
+      (handler-case
+          (let* ((output (evaluate-tree (first (rest ind))))
+                 (target (poly-to-learn val))
+                 (error (abs (- output target)))) ;get abs error
+            (incf z error)) ;add to running error sum
+        (error (condition) ;any error should return very positive number
+          (format t "~%Warning, ~a" condition)
+          (setf z most-positive-fixnum))))
+    (/ 1.0 (+ 1 z)))  ; Return fitness as 1 / (1 + z)
 
 
   ;;; IMPLEMENT ME
-
   )
 
+
+(evolve 150 500
+ 	:setup #'gp-symbolic-regression-setup
+	:creator #'gp-creator
+	:selector #'tournament-selector
+	:modifier #'gp-modifier
+  :evaluator #'gp-symbolic-regression-evaluator
+	:printer #'simple-printer)
 
 ;;; Example run
 #|
