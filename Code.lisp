@@ -836,7 +836,7 @@ the two modified versions as a list."
 ;;;
 ;;; (+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x)))
 
-
+(defparameter *optimal-ind* '('("root") ((+ ((* ((X)) ((* ((+ ((X)) ((X)))))) ((X)))))) ((* ((+ ((X)) ((cos ((- ((X)) ((X)))))))) ((X)))) )   )
 
 ;;; GP SYMBOLIC REGRESSION SETUP
 ;;; (I provide this for you)
@@ -911,17 +911,17 @@ returning most-positive-fixnum as the output of that expression."
           (setf z most-positive-fixnum))))
     (/ 1.0 (+ 1 z)))  ; Return fitness as 1 / (1 + z)
 
-
   ;;; IMPLEMENT ME
   )
 
+(print (gp-symbolic-regression-evaluator *optimal-ind*))
 
-(evolve 150 500
+(evolve 50 500
  	:setup #'gp-symbolic-regression-setup
 	:creator #'gp-creator
 	:selector #'tournament-selector
 	:modifier #'gp-modifier
-  :evaluator #'gp-symbolic-regression-evaluator
+        :evaluator #'gp-symbolic-regression-evaluator
 	:printer #'simple-printer)
 
 ;;; Example run
