@@ -104,7 +104,6 @@ new slot is created).  EQUALP is the test used for duplicates."
 
 
 
-
 ;;; TOURNAMENT SELECTION
 
 (defparameter *tournament-size* 7)
@@ -491,6 +490,7 @@ and the floating-point ranges involved, etc.  I dunno."
 
 
 
+
 ;;; an example way to fire up the GA.  
 
 #|
@@ -553,15 +553,17 @@ Error generated if the queue is empty."
     (swap (elt queue index) (elt queue (1- (length queue))))
     (vector-pop queue)))
 
-(defun enqueue-children (q nonterminal)
-  (let* ((arity (cadr nonterminal))
-         (children (make-list arity :initial-element nil)))
-    (dotimes (i arity)
-      (let ((child-pointer (list nil)))
-        (enqueue child-pointer q)
-        (setf (nth i children) child-pointer)))
-    (setf (cdr nonterminal) children)
-    nonterminal))
+;; (defun enqueue-children (q nonterminal)
+;;   (let* ((arity (cadr nonterminal))
+;;          (children (make-list arity :initial-element nil)))
+;;     (dotimes (i arity)
+;;       (let ((child-pointer (list nil)))
+;;         (enqueue child-pointer q)
+;;         (setf (nth i children) child-pointer)))
+;;     (setf (cdr nonterminal) children)
+;;     nonterminal))
+
+
 
 (defun ptc2 (size)
   "If size=1, just returns a random terminal.  Else builds and
@@ -572,23 +574,56 @@ Then fills the remaining slots in the horizon with terminals.
 Terminals like X should be added to the tree
 in function form (X) rather than just X."
   (if (= size 1)
-      (list '("root") (list (list (random-elt *terminal-set*)))) ; if size = 1, return random terminal
+      (list "r" (list (random-elt *terminal-set*))) ; if size = 1, return random terminal
       (let ((q (make-queue))
             (root (copy-list (random-elt *nonterminal-set*)))
             (count 1)
-            (r-node (list nil))
+            (r-node '())
             )  ; initialize queue, root, count
-        (setf (car r-node) (enqueue-children q root))  ; transform root and enqueue root's children nodes
+        (setf r-node (append r-node (list (first root))))  ; transform root and enqueue root's children nodes
+        (dotimes (i (second root))
+          (setf r-node (append r-node '("empty")))
+          )
+        (dotimes (i (second root))
+          (enqueue (list r-node (1+ i) ) q)
+          )
         (while (< (+ count (length q)) size) nil  ; ADD NONTERMINALS UNTIL SIZE IS HIT
-          (let ((new-term (copy-list (random-elt *nonterminal-set*)))
+          (let* ((new-term (copy-list (random-elt *nonterminal-set*)))
                 (child-ref (random-dequeue q)))  ; dequeue random existing reference
-            (setf (car child-ref) (enqueue-children q new-term))  ; transform new term and enqueue children nodes, then attach to existing tree via child-ref
-            (incf count)))  ; increment count
+            ;;(setf (elt (first child-ref) (second child-ref)) (list (first new-term)))
+            ;; (dotimes (j (second new-term))
+            ;;   (setf new-list (append new-list '("empty")))
+            ;;   )
+            (incf count)
+            (if (= 1 (second new-term))
+                (setf (elt (first child-ref) (second child-ref)) (list (first new-term) "empty"))
+                )
+            (if (= 2 (second new-term))
+                (setf (elt (first child-ref) (second child-ref)) (list (first new-term) "empty" "empty"))
+                )
+            (if (= 3 (second new-term))
+                (setf (elt (first child-ref) (second child-ref)) (list (first new-term) "empty" "empty" "empty"))
+                )
+            (dotimes (j (second new-term))
+              (enqueue (list (elt (first child-ref) (second child-ref)) (1+ j)) q)
+              )
+            ;;(setf (elt (first child-ref) (second child-ref)) (list (first new-term) "empty"))
+            ;; (dotimes (j (second new-term))
+            ;;   (enqueue (list (elt (first child-ref) (second child-ref)) (1+ j)) q)
+            ;;   )
+            ;;(enqueue 1 q)
+            ;; (dotimes (j (second new-term))
+            ;;   (setf (elt (first child-ref) (second child-ref)) (append (elt (first child-ref) (second child-ref)) '(nil)))
+            ;;   (print r-node)
+            ;;   ;;(enqueue (list (elt (first child-ref) (second child-ref)) (1+ j)) q)
+            ;;   )
+            )
+          )  ; increment count
         (while (> (length q) 0) nil
           (let ((new-term (random-elt *terminal-set*))  ; create a list for terminal
                 (child-ref (random-dequeue q)))
-            (setf (car child-ref) (list new-term))))  ; attach terminal to existing tree
-       (list '("root") r-node)))  ; return root
+            (setf  (elt (first child-ref) (second child-ref)) (list new-term))))  ; attach terminal to existing tree
+        (list "r" r-node)))  ; return root
   #|
   The simple version of PTC2 you will implement is as follows:
 
@@ -631,7 +666,18 @@ in function form (X) rather than just X."
 
   ;;; IMPLEMENT ME
 
+
   )
+
+
+;;(gp-symbolic-regression-setup)
+;;(print (ptc2 5))
+;;(setf *x* 1.9129)
+;;(print (first (rest (ptc2 5))))
+;;(defparameter *example-tree* (ptc2 5))
+;;(setf *x* 1.5)
+;;(print *example-tree*)
+;;(print (eval (first (rest *example-tree*))))
 
 
 (defparameter *size-limit* 20)
@@ -645,6 +691,8 @@ a tree of that size"
 
 
 ;;; GP TREE MODIFICATION CODE
+
+
 
 (defun num-nodes (tree &optional (node-count 0))
   "Returns the number of nodes in tree, including the root"
@@ -731,6 +779,12 @@ If n is bigger than the number of nodes in the tree
       )
 )
 
+
+;; (gp-symbolic-regression-setup)
+;; (defparameter *example-tree* (ptc2 6))
+;; (dotimes (x (num-nodes *example-tree*))
+;;   (print (nsp-helper *example-tree* x))
+;;   )
 ;; (dotimes (x 12)
 ;;   (print (list x (nsp-helper '(a (b c) (d e (f (g h i j)) k)) x)))
 ;;   )
@@ -766,7 +820,7 @@ the two modified versions as a list."
          ;;(i2-subtree (elt i2-parent (1+ i2-cindex)))
          ;;2nd and 3rd part can be condensed, I think subtree is needed though for preventing override 
          )
-    (if (random?);;;just 1 for demonstration, usually default so coinflip
+    (if (random? 1);;;just 1 for demonstration, usually default so coinflip
         (progn ;;crossover
           ;; (print i1-nsp)
           ;; (print i2-nsp)
@@ -836,8 +890,8 @@ the two modified versions as a list."
 ;;;
 ;;; (+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x)))
 
-(defparameter *optimal-ind* '('("root") ((+ ((* ((X)) ((* ((+ ((X)) ((X)))))) ((X)))))) ((* ((+ ((X)) ((cos ((- ((X)) ((X)))))))) ((X)))) )   )
-
+(defparameter *optimal-ind* '("r" ((+ ((* ((X)) ((* ((+ ((X)) ((X)))))) ((X)))))) ((* ((+ ((X)) ((cos ((- ((X)) ((X)))))))) ((X)))) )   )
+(defparameter *optimal-ind2* '("r" (+ (* (x) (* (+ (x) (* (x) (x))) (x))) (* (+ (x) (cos (- (x) (x)))) (x)))))
 ;;; GP SYMBOLIC REGRESSION SETUP
 ;;; (I provide this for you)
 
@@ -847,12 +901,14 @@ the two modified versions as a list."
 (defun gp-symbolic-regression-setup ()
   "Defines the function sets, and sets up vals"
 
-  (setq *nonterminal-set* '((+ 2) (- 2) (* 2) (% 2) (sin 1) (cos 1) (exp 1)))
-  (setq *terminal-set* '(x))
+  (setf *nonterminal-set* '((+ 2) (- 2) (* 2) (% 2) (sin 1) (cos 1) (exp 1)))
+  (setf *terminal-set* '(x))
 
-  (setq *vals* nil)
+  (setf *vals* nil)
   (dotimes (v *num-vals*)
     (push (1- (random 2.0)) *vals*)))
+
+
 
 
 (defun poly-to-learn (x) (+ (* x x x x) (* x x x) (* x x) x))
@@ -870,7 +926,7 @@ the two modified versions as a list."
     ((numberp tree) tree)  ; If it's a number, return it
     ((symbolp tree) (funcall tree))  ; If it's a symbol, call the corresponding function
     ((listp tree)  ; If it's a list, evaluate it as a function application
-     (let ((tree (elt tree 1))
+     (let (
            (op (car tree))
            (args (cdr tree)))
        (apply op (mapcar #'evaluate-tree args))))  ; Directly use `op` as the function
@@ -902,7 +958,7 @@ returning most-positive-fixnum as the output of that expression."
     (dolist (val *vals*)
       (setf *x* val)
       (handler-case
-          (let* ((output (evaluate-tree (first (rest ind))))
+          (let* ((output (eval (first (rest ind))))
                  (target (poly-to-learn val))
                  (error (abs (- output target)))) ;get abs error
             (incf z error)) ;add to running error sum
@@ -914,7 +970,7 @@ returning most-positive-fixnum as the output of that expression."
   ;;; IMPLEMENT ME
   )
 
-(print (gp-symbolic-regression-evaluator *optimal-ind*))
+;;(print (gp-symbolic-regression-evaluator *optimal-ind2*))
 
 (evolve 50 500
  	:setup #'gp-symbolic-regression-setup
@@ -924,7 +980,13 @@ returning most-positive-fixnum as the output of that expression."
         :evaluator #'gp-symbolic-regression-evaluator
 	:printer #'simple-printer)
 
-;;; Example run
+;; (gp-symbolic-regression-setup)
+;; (print (gp-symbolic-regression-evaluator (ptc2 1) )  )
+;; (print (gp-modifier (ptc2 10) (ptc2 10)))
+;; (print (gp-symbolic-regression-evaluator (first (gp-modifier (ptc2 20) (ptc2 20)))))
+
+
+;;; Example Run
 #|
 (evolve 50 500
  	:setup #'gp-symbolic-regression-setup
@@ -982,6 +1044,7 @@ returning most-positive-fixnum as the output of that expression."
 ;;; Note that in my thesis it says 400 moves and not 600.  We're going with
 ;;; 600 here.  It's easier.
 
+;;(defparameter *optimal-ant* '(progn3 (if-food-ahead (move) (progn2 (left) (progn2 (left) (if-food-ahead (move) (right))))) (move) (right)))
 
 
 ;;; our ant's food trail map
@@ -1133,8 +1196,8 @@ else ELSE is evaluated"
          (aheady (y-pos-at *current-y-pos* (absolute-direction *n* *current-ant-dir*)))
          )
     (if (null (aref *map* aheadx aheady))
-        (funcall then)
-        (funcall else)
+        (funcall (first then))
+        (funcall (first else))
         )
       )
     ;;; IMPLEMENT ME
@@ -1143,16 +1206,16 @@ else ELSE is evaluated"
 ;;;REMOVED DECLAIM FOR COMPILATION
 (defun progn2 (arg1 arg2)
   "Evaluates arg1 and arg2 in succession, then returns the value of arg2"
-  (funcall arg1)
-  (funcall arg2)
+  (funcall (first arg1))
+  (funcall (first arg2))
 )  ;; ...though in artificial ant, the return value isn't used ... 
 
 
 (defun progn3 (arg1 arg2 arg3)
   "Evaluates arg1, arg2, and arg3 in succession, then returns the value of arg3"
-  (funcall arg1)
-  (funcall arg2)
-  (funcall arg3)
+  (funcall (first arg1))
+  (funcall (first arg2))
+  (funcall (first arg3))
 )  ;; ...though in artificial ant, the return value isn't used ...
 
 (defun move ()
@@ -1201,11 +1264,11 @@ where the ant had gone."
 ;; I provide this for you
 (defun gp-artificial-ant-setup ()
   "Sets up vals"
-  (setq *nonterminal-set* '((if-food-ahead 2) (progn2 2) (progn3 3)))
-  (setq *terminal-set* '(left right move))
-  (setq *map* (make-map *map-strs*))
-  (setq *current-move* 0)
-  (setq *eaten-pellets* 0))
+  (setf *nonterminal-set* '((if-food-ahead 2) (progn2 2) (progn3 3)))
+  (setf *terminal-set* '(left right move))
+  (setf *map* (make-map *map-strs*))
+  (setf *current-move* 0)
+  (setf *eaten-pellets* 0))
 
 ;;;(gp-artificial-ant-setup)
 ;;;(print (gp-creator))
@@ -1233,3 +1296,8 @@ more pellets, higher (better) fitness."
         :evaluator #'gp-artificial-ant-evaluator
 	:printer #'simple-printer)
 |#
+
+
+
+
+
