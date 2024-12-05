@@ -972,13 +972,13 @@ returning most-positive-fixnum as the output of that expression."
 
 ;;(print (gp-symbolic-regression-evaluator *optimal-ind2*))
 
-(evolve 50 500
- 	:setup #'gp-symbolic-regression-setup
-	:creator #'gp-creator
-	:selector #'tournament-selector
-	:modifier #'gp-modifier
-        :evaluator #'gp-symbolic-regression-evaluator
-	:printer #'simple-printer)
+;; (evolve 50 500
+;;  	:setup #'gp-symbolic-regression-setup
+;; 	:creator #'gp-creator 
+;; 	:selector #'tournament-selector
+;; 	:modifier #'gp-modifier
+;;         :evaluator #'gp-symbolic-regression-evaluator
+;; 	:printer #'simple-printer)
 
 ;; (gp-symbolic-regression-setup)
 ;; (print (gp-symbolic-regression-evaluator (ptc2 1) )  )
@@ -1187,7 +1187,7 @@ direction from the given y position.  Toroidal."
 
 ;;; the function set you have to implement
 
-(defmacro if-food-ahead (then else)
+(defun if-food-ahead (then else)
   "If there is food directly ahead of the ant, then THEN is evaluated,
 else ELSE is evaluated"
   ;; because this is an if/then statement, it MUST be implemented as a macro.
@@ -1276,16 +1276,80 @@ where the ant had gone."
 ;; you'll need to implement this as well
 
 (defun gp-artificial-ant-evaluator (ind)
-  (declare (ignore ind))
   "Evaluates an individual by putting it in a fresh map and letting it run
 for *num-moves* moves.  The fitness is the number of pellets eaten -- thus
 more pellets, higher (better) fitness."
-
+  (setf *current-move* 0)
+  (setf *current-x-pos* 0)
+  (setf *current-y-pos* 0)
+  (setf *current-ant-dir* *e*)
+  (setf *eaten-pellets* 0)
+  (setf *map* (make-map *map-strs*))
+  (while (< *current-move* *num-moves*) nil
+    (ant-tree (first (rest ind)))
+    )
+  *eaten-pellets*
+  ;;(ant-tree (first (rest ind)))
       ;;; IMPLEMENT ME
 )
 
+
+(defun ant-tree (tree)
+  (let* ((func (first tree)))
+    (cond
+      ((eq func (first (first *nonterminal-set*)))
+       (let* (
+              (aheadx (x-pos-at *current-x-pos* (absolute-direction *n* *current-ant-dir*)))
+              (aheady (y-pos-at *current-y-pos* (absolute-direction *n* *current-ant-dir*)))
+              )
+         (if (null (aref *map* aheadx aheady))
+             (ant-tree (second tree))
+             (ant-tree (third tree))
+             )
+         )
+       )
+      ((eq func (first (second *nonterminal-set*))) 
+       (progn
+         (ant-tree (second tree))
+         (ant-tree (third tree))
+         )
+       )
+      ((eq func (first (third *nonterminal-set*)))
+       (progn
+         (ant-tree (second tree))
+         (ant-tree (third tree))
+         (ant-tree (fourth tree))
+         )
+       )
+      ((eq func (first *terminal-set*)) (left))
+      ((eq func (second *terminal-set*)) (right))
+      ((eq func (third *terminal-set*)) (move))
+      (t (error "Unknown tree element: ~a" func))
+      )
+    )
+  )
+
+;;1 food ahead
+;;2 progn2
+;;3 progn3
+;;4 left
+;;5 right
+;;6 move
 ;; you might choose to write your own printer, which prints out the best
 ;; individual's map.  But it's not required.
+
+;;(gp-artificial-ant-setup)
+
+;;(gp-artificial-ant-evaluator (ptc2 6))
+;;(print (gp-artificial-ant-evaluator '("r" (progn3 (if-food-ahead (move) (progn2 (left) (progn2 (left) (if-food-ahead (move) (right))))) (move) (right)  )     )         ))
+
+(evolve 50 500
+ 	:setup #'gp-artificial-ant-setup
+	:creator #'gp-creator
+	:selector #'tournament-selector
+	:modifier #'gp-modifier
+        :evaluator #'gp-artificial-ant-evaluator
+	:printer #'simple-printer)
 
 #|
 (evolve 50 500
@@ -1297,7 +1361,10 @@ more pellets, higher (better) fitness."
 	:printer #'simple-printer)
 |#
 
+;; (gp-artificial-ant-setup)
 
+;;(first (rest (ptc2 30)))
 
+;; (progn3 (if-food-ahead (move) (progn2 (left) (progn2 (left) (if-food-ahead '(move) (right))))) (move) (right)) 
 
-
+;; (print-map *eaten-pellets*)
